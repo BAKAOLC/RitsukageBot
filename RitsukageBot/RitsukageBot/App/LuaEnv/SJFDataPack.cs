@@ -39,6 +39,16 @@ namespace Native.Csharp.App.LuaEnv
             }
         }
 
+        public SJFDataPack(byte[] bs)
+        {
+            int dataLength = ReadInt(bs, 0);
+            Version = ReadShort(bs, 6);
+            TimeStamp = ReadLong(bs, 8);
+            SendTo = ReadLong(bs, 16);
+            OpCode = (SJFOpCode)ReadShort(bs, 24);
+            JsonData = Encoding.UTF8.GetString(bs, HeadLength, dataLength - HeadLength);
+        }
+
         public byte[] Encode()
         {
             ByteDataBuilder data = new ByteDataBuilder();

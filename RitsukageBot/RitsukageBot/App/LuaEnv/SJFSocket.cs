@@ -3,68 +3,74 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WebSocketSharp;
 
 namespace Native.Csharp.App.LuaEnv
 {
     class SJFSocket
     {
-        static WebSocket_Client _client = null;
+        static WebSocket _client = null;
+
         static bool _isRunning = false;
 
         public SJFSocket()
         {
         }
 
-        private static void Client_Opened()
+        private static void Client_Opened(object sender, EventArgs e)
         {
             Common.AppData.CQLog.Info("SJF Socket", "Opened");
-            LuaEnv.LuaStates.Run("sjf", "SJFSocketOpened", new { });
-        }
-
-        private static void Client_MessageReceived(string msg)
-        {
-            SJFDataPack data = new SJFDataPack(msg);
-            Common.AppData.CQLog.InfoReceive("SJF Socket", data.ToString());
-            LuaEnv.LuaStates.Run("sjf", "SJFSocketData", new
+            LuaEnv.LuaStates.Run("sjf", "SJFSocketOpened", new
             {
-                data
+                e
             });
         }
 
-        private static void Client_Error(Exception e)
+        private static void Client_MessageReceived(object sender, MessageEventArgs e)
         {
-            Common.AppData.CQLog.Error("SJF Socket", e.ToString());
+            if (e.IsBinary)
+            {
+                SJFDataPack data = new SJFDataPack(e.RawData);
+                Common.AppData.CQLog.InfoReceive("SJF Socket", data.ToString());
+                LuaEnv.LuaStates.Run("sjf", "SJFSocketData", new
+                {
+                    e,
+                    data
+                });
+            }
+        }
+
+        private static void Client_Error(object sender, ErrorEventArgs e)
+        {
+            Common.AppData.CQLog.Error("SJF Socket", e.Exception.ToString());
             LuaEnv.LuaStates.Run("sjf", "SJFSocketError", new {
                 e
             });
         }
 
-        private static void Client_Closed()
+        private static void Client_Closed(object sender, CloseEventArgs e)
         {
             Common.AppData.CQLog.Info("SJF Socket", "Closed");
-            LuaEnv.LuaStates.Run("sjf", "SJFSocketClosed", new { });
+            LuaEnv.LuaStates.Run("sjf", "SJFSocketClosed", new
+            {
+                e
+            });
         }
 
         public static bool Start()
         {
             if (_isRunning) return true;
 
+            _client = new WebSocket(Utils.setting.SJFSocketConnect);
+            _client.OnOpen += Client_Opened;
+            _client.OnMessage += Client_MessageReceived;
+            _client.OnError += Client_Error;
+            _client.OnClose += Client_Closed;
+            _client.Connect();
+            Common.AppData.CQLog.Info("SJF Socket", $"Start to connect {Utils.setting.SJFSocketConnect}");
             _isRunning = true;
 
-            if (_client == null)
-            {
-                _client = new WebSocket_Client();
-                _client.Opened += Client_Opened;
-                _client.MessageReceived += Client_MessageReceived;
-                _client.Error += Client_Error;
-                _client.Closed += Client_Closed;
-            }
-
-            var result = _client.Start(Utils.setting.SJFSocketConnect);
-            if (result)
-                Common.AppData.CQLog.Info("SJF Socket", $"Start to connect {Utils.setting.SJFSocketConnect}");
-
-            return result;
+            return true;
         }
 
         public static void Stop()
@@ -73,16 +79,16 @@ namespace Native.Csharp.App.LuaEnv
 
             Common.AppData.CQLog.Info("SJF Socket", "Stop");
 
-            _client?.Dispose();
+            _client?.Close();
             _client = null;
             _isRunning = false;
         }
 
-        public static void SendMessage(SJFDataPack data)
+        public static void Send(SJFDataPack data)
         {
             if (!_isRunning) return;
 
-            _client.SendMessage(Encoding.UTF8.GetString(data.Encode()));
+            _client.Send(data.Encode());
         }
     }
 }
