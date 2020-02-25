@@ -160,7 +160,7 @@ namespace Native.Csharp.App.LuaEnv
         private static void SocketLogMessage(object sender, SocketLogMessageArgs e)
         {
             Common.AppData.CQLog.Info("Bilibili Live Danmaku", $"Room {e.RoomID}: {e.Message}");
-            LuaEnv.LuaStates.Run("Bilibili Live Danmaku", "ReceivedUserCount", new
+            LuaEnv.LuaStates.Run("Bilibili Live Danmaku", "SocketLogMessage", new
             {
                 e.RoomID,
                 e.Message
