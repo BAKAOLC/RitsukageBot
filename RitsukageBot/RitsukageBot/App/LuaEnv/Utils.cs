@@ -108,7 +108,7 @@ namespace Native.Csharp.App.LuaEnv
                     LuaEnv.LuaStates.Run("main", "AppEnable", new { });
                     Common.AppData.CQLog.Info("Lua插件初始化脚本", "初始化完成！您可以开始用了");
                 }
-                catch(Exception ee)
+                catch (Exception ee)
                 {
                     Common.AppData.CQLog.Warning("Lua插件初始化脚本", $"初始化脚本文件失败，错误信息：{ee.Message}");
                     return;//clone失败，还原
@@ -274,7 +274,7 @@ namespace Native.Csharp.App.LuaEnv
         /// </summary>
         /// <param name="bmp">图片对象</param>
         /// <returns>图片路径</returns>
-        public static string SaveImage(Bitmap bmp,string name)
+        public static string SaveImage(Bitmap bmp, string name)
         {
             bmp.Save(AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "data/image/" + name + ".luatemp", System.Drawing.Imaging.ImageFormat.Jpeg);
             bmp.Dispose();
@@ -365,7 +365,11 @@ namespace Native.Csharp.App.LuaEnv
                         }
                         while (l > 0);
                         outStream.Close();
+                        outStream.Dispose();
                         inStream.Close();
+                        inStream.Dispose();
+                        response.Close();
+                        response.Dispose();
                         return true;
                     }
                     catch
@@ -427,7 +431,9 @@ namespace Native.Csharp.App.LuaEnv
 
                 string retString = myStreamReader.ReadToEnd();
                 myStreamReader.Close();
+                myStreamReader.Dispose();
                 myResponseStream.Close();
+                myResponseStream.Dispose();
 
                 return retString;
             }
@@ -482,6 +488,10 @@ namespace Native.Csharp.App.LuaEnv
                 }
                 using StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding));
                 string retString = reader.ReadToEnd();
+                reader.Close();
+                reader.Dispose();
+                response.Close();
+                response.Dispose();
                 return retString;
             }
             catch (Exception e)
@@ -552,6 +562,10 @@ namespace Native.Csharp.App.LuaEnv
                 }
                 using StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding));
                 string retString = reader.ReadToEnd();
+                reader.Close();
+                reader.Dispose();
+                response.Close();
+                response.Dispose();
                 return retString;
             }
             catch (Exception e)
@@ -787,23 +801,23 @@ namespace Native.Csharp.App.LuaEnv
         }
 
         public static string CQCode_At(long qq) => Sdk.Cqp.CQApi.CQCode_At(qq).ToString();
-        public static string CQCode_AtAll() => Sdk.Cqp.CQApi.CQCode_AtAll().ToString(); 
+        public static string CQCode_AtAll() => Sdk.Cqp.CQApi.CQCode_AtAll().ToString();
         public static string CQCode_Emoji(int id) => Sdk.Cqp.CQApi.CQCode_Emoji(id).ToString();
         public static string CQCode_Face(int id) => Sdk.Cqp.CQApi.CQCode_Face((CQFace)id).ToString();
-        public static string CQCode_Shake() => Sdk.Cqp.CQApi.CQCode_Shake().ToString(); 
-        public static string CQEnCode(string s) => Sdk.Cqp.CQApi.CQEnCode(s,false).ToString(); 
-        public static string CQDeCode(string s) => Sdk.Cqp.CQApi.CQDeCode(s).ToString(); 
-        public static string CQCode_ShareLink(string url, string title, string content, string imageUrl = null) => 
-            Sdk.Cqp.CQApi.CQCode_ShareLink(url,title,content,imageUrl).ToString(); 
-        public static string CQCode_ShareFriendCard(long id) => Sdk.Cqp.CQApi.CQCode_ShareFriendCard(id).ToString(); 
+        public static string CQCode_Shake() => Sdk.Cqp.CQApi.CQCode_Shake().ToString();
+        public static string CQEnCode(string s) => Sdk.Cqp.CQApi.CQEnCode(s, false).ToString();
+        public static string CQDeCode(string s) => Sdk.Cqp.CQApi.CQDeCode(s).ToString();
+        public static string CQCode_ShareLink(string url, string title, string content, string imageUrl = null) =>
+            Sdk.Cqp.CQApi.CQCode_ShareLink(url, title, content, imageUrl).ToString();
+        public static string CQCode_ShareFriendCard(long id) => Sdk.Cqp.CQApi.CQCode_ShareFriendCard(id).ToString();
         public static string CQCode_ShareGroupCard(long id) => Sdk.Cqp.CQApi.CQCode_ShareGroupCard(id).ToString();
         public static string CQCode_ShareGPS(string site, string detail, double lat, double lon, int zoom = 15) =>
             Sdk.Cqp.CQApi.CQCode_ShareGPS(site, detail, lat, lon, zoom).ToString();
         public static string CQCode_Anonymous(bool forced) => Sdk.Cqp.CQApi.CQCode_Anonymous(forced).ToString();
-        public static string CQCode_Music(long id, int type, int style) => 
-            Sdk.Cqp.CQApi.CQCode_Music(id,(CQMusicType)type,(CQMusicStyle)style).ToString();
-        public static string CQCode_DIYMusic(string url, string musicUrl, string title, string content, string imageUrl) => 
-            Sdk.Cqp.CQApi.CQCode_DIYMusic(url,musicUrl,title,content,imageUrl).ToString();
+        public static string CQCode_Music(long id, int type, int style) =>
+            Sdk.Cqp.CQApi.CQCode_Music(id, (CQMusicType)type, (CQMusicStyle)style).ToString();
+        public static string CQCode_DIYMusic(string url, string musicUrl, string title, string content, string imageUrl) =>
+            Sdk.Cqp.CQApi.CQCode_DIYMusic(url, musicUrl, title, content, imageUrl).ToString();
         public static string CQCode_Image(string path) => Sdk.Cqp.CQApi.CQCode_Image(path).ToString();
         public static string CQCode_Record(string path) => Sdk.Cqp.CQApi.CQCode_Image(path).ToString();
         public static object GetGroupMemberInfo(long groupId, long qqId, bool notCache = false)
