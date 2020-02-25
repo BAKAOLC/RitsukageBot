@@ -46,7 +46,7 @@ namespace Native.Csharp.App.LuaEnv
             try
             {
                 if (IsConnected)
-                    throw new InvalidOperationException();
+                    return true;
                 try
                 {
                     var req = await _httpClient.GetStringAsync(CIDInfoUrl + RoomID);
@@ -266,6 +266,8 @@ namespace Native.Csharp.App.LuaEnv
 
         public void Disconnect(Exception Error = null)
         {
+            if (!IsConnected)
+                return;
             IsConnected = false;
             try
             {
