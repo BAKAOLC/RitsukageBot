@@ -23,7 +23,6 @@ namespace Native.Csharp.App.LuaEnv
         private short ProtocolVersion = 1;
 
         public int RoomID;
-        public string SocketServer;
 
         public bool IsConnected = false;
         private TcpClient Client;

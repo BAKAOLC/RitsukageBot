@@ -122,7 +122,7 @@ namespace Native.Csharp.App.LuaEnv
         {
             if (e.Danmaku.Type == BilibiliLiveDanmaku_SocketReceiveDataType.Comment)
             {
-                Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", $"Room {e.Danmaku.RoomID} received danmaku:");
+                Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", $"Room {e.RoomID} received danmaku:");
                 Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", e.Danmaku.CommentText);
             }
             LuaEnv.LuaStates.Run("Bilibili Live Danmaku", "ReceivedDanmaku", new
