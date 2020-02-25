@@ -35,6 +35,7 @@ namespace Native.Csharp.App.LuaEnv
                     SocketList[roomid].ReceivedDanmaku += SocketReceivedDanmaku;
                     SocketList[roomid].ReceivedUserCount += SocketReceivedUserCount;
                     SocketList[roomid].Disconnected += SocketDisconnected;
+                    SocketList[roomid].LogMessage += SocketLogMessage;
                 }
                 try
                 {
@@ -83,7 +84,9 @@ namespace Native.Csharp.App.LuaEnv
                 request.Headers.Add("cookie", cookie);
                 long t = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds / 1000;
                 string jct = MatchJCT.Match(cookie).Value;
-                string content = "color=16777215&" + "fontsize=25&" + "mode=1&" + "bubble=0&" + "msg=" + UrlEncode(msg) + "&rnd=" + t + "&roomid=" + roomid + "&csrf=" + jct + "&csrf_token=" + jct;
+                string content = "color=16777215&" + "fontsize=25&" + "mode=1&" + "bubble=0&"
+                    + "msg=" + UrlEncode(msg) + "&rnd=" + t + "&roomid=" + roomid
+                    + "&csrf=" + jct + "&csrf_token=" + jct;
                 request.ContentLength = content.Length;
                 byte[] byteResquest = Encoding.UTF8.GetBytes(content);
                 using Stream stream = request.GetRequestStream();
@@ -151,6 +154,16 @@ namespace Native.Csharp.App.LuaEnv
                 e.RoomID,
                 e.ByError,
                 e.Error
+            });
+        }
+
+        private static void SocketLogMessage(object sender, SocketLogMessageArgs e)
+        {
+            Common.AppData.CQLog.Info("Bilibili Live Danmaku", $"Room {e.RoomID}: {e.Message}");
+            LuaEnv.LuaStates.Run("Bilibili Live Danmaku", "ReceivedUserCount", new
+            {
+                e.RoomID,
+                e.Message
             });
         }
     }
