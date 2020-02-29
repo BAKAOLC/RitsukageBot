@@ -66,7 +66,7 @@ namespace Native.Csharp.App.LuaEnv
         }
 
         private static Regex MatchJCT = new Regex("(?<=bili_jct=)[^;]+");
-        public static void SendDanmaku(int roomid, string msg, string cookie)
+        public static string SendDanmaku(int roomid, string msg, string cookie)
         {
             HttpWebRequest request = null;
             try
@@ -92,16 +92,27 @@ namespace Native.Csharp.App.LuaEnv
                 using Stream stream = request.GetRequestStream();
                 stream.Write(byteResquest, 0, byteResquest.Length);
                 stream.Close();
-                request.GetResponse().Close();
+                using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                string encoding = response.ContentEncoding;
+                if (encoding == null || encoding.Length < 1)
+                {
+                    encoding = "UTF-8"; //默认编码
+                }
+                using StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding));
+                string retString = reader.ReadToEnd();
+                reader.Close();
+                reader.Dispose();
+                response.Close();
+                response.Dispose();
+                request.Abort();
+                return retString;
             }
             catch (Exception e)
             {
+                request?.Abort();
                 Common.AppData.CQLog.Error("lua插件错误", $"post错误：{e.Message}");
             }
-            finally
-            {
-                request?.Abort();
-            }
+            return "";
         }
 
         private static string UrlEncode(string url)

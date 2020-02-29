@@ -258,6 +258,7 @@
       <DependentUpon>CQExport.tt</DependentUpon>
     </Compile>
     <Compile Include="App\CQMain.cs" />
+    <Compile Include="App\LuaEnv\Bilibili.cs" />
     <Compile Include="App\LuaEnv\BilibiliLiveDanmaku_Events.cs" />
     <Compile Include="App\LuaEnv\BilibiliLiveDanmaku_GiftRank.cs" />
     <Compile Include="App\LuaEnv\BilibiliLiveDanmaku_Socket.cs" />

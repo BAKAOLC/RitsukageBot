@@ -370,25 +370,25 @@ namespace Native.Csharp.App.LuaEnv
                         inStream.Dispose();
                         response.Close();
                         response.Dispose();
+                        request.Abort();
                         return true;
                     }
                     catch
                     {
+                        request?.Abort();
                         return false;
                     }
                 }
                 else
                 {
+                    request?.Abort();
                     return false;
                 }
             }
             catch (Exception e)
             {
-                Common.AppData.CQLog.Error("lua插件错误", $"下载文件错误：{e.Message}");
-            }
-            finally
-            {
                 request?.Abort();
+                Common.AppData.CQLog.Error("lua插件错误", $"下载文件错误：{e.Message}");
             }
             return false;
         }
@@ -434,16 +434,13 @@ namespace Native.Csharp.App.LuaEnv
                 myStreamReader.Dispose();
                 myResponseStream.Close();
                 myResponseStream.Dispose();
-
+                request.Abort();
                 return retString;
             }
             catch (Exception e)
             {
-                Common.AppData.CQLog.Error("lua插件错误", $"get错误：{e.Message}");
-            }
-            finally
-            {
                 request?.Abort();
+                Common.AppData.CQLog.Error("lua插件错误", $"get错误：{e.Message}");
             }
             return "";
         }
@@ -492,15 +489,13 @@ namespace Native.Csharp.App.LuaEnv
                 reader.Dispose();
                 response.Close();
                 response.Dispose();
+                request.Abort();
                 return retString;
             }
             catch (Exception e)
             {
-                Common.AppData.CQLog.Error("lua插件错误", $"post错误：{e.Message}");
-            }
-            finally
-            {
                 request?.Abort();
+                Common.AppData.CQLog.Error("lua插件错误", $"post错误：{e.Message}");
             }
             return "";
         }
@@ -566,15 +561,13 @@ namespace Native.Csharp.App.LuaEnv
                 reader.Dispose();
                 response.Close();
                 response.Dispose();
+                request.Abort();
                 return retString;
             }
             catch (Exception e)
             {
-                Common.AppData.CQLog.Error("lua插件错误", $"上传错误：{e.Message}");
-            }
-            finally
-            {
                 request?.Abort();
+                Common.AppData.CQLog.Error("lua插件错误", $"上传错误：{e.Message}");
             }
             return null;
         }
