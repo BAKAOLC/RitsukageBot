@@ -267,6 +267,7 @@
     <Compile Include="App\LuaEnv\ByteDataBuilder.cs" />
     <Compile Include="App\LuaEnv\LuaStates.cs" />
     <Compile Include="App\LuaEnv\MySQLData.cs" />
+    <Compile Include="App\LuaEnv\Rand.cs" />
     <Compile Include="App\LuaEnv\Settings.cs" />
     <Compile Include="App\LuaEnv\SJFDataPack.cs" />
     <Compile Include="App\LuaEnv\SJFOpCode.cs" />
@@ -276,6 +277,7 @@
     <Compile Include="App\LuaEnv\WebSocket_Client.cs" />
     <Compile Include="App\LuaEnv\WebSocket_Server.cs" />
     <Compile Include="App\LuaEnv\SJFSocket.cs" />
+    <Compile Include="App\LuaEnv\WELL512.cs" />
     <Compile Include="App\LuaEnv\WSClient.cs" />
     <Compile Include="App\LuaEnv\WSServer.cs" />
     <Compile Include="App\LuaEnv\XmlApi.cs" />

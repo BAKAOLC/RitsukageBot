@@ -13,7 +13,7 @@ namespace Native.Csharp.App.LuaEnv
     {
         private const string PostDynamicUrl = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/create";
 
-        private static Regex MatchJCT = new Regex("(?<=bili_jct=)[^;]+");
+        private readonly static Regex MatchJCT = new Regex("(?<=bili_jct=)[^;]+");
         public static string SendDynamic(string msg, string cookie)
         {
             HttpWebRequest request = null;

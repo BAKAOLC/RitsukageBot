@@ -65,7 +65,7 @@ namespace Native.Csharp.App.LuaEnv
             }
         }
 
-        private static Regex MatchJCT = new Regex("(?<=bili_jct=)[^;]+");
+        private readonly static Regex MatchJCT = new Regex("(?<=bili_jct=)[^;]+");
         public static string SendDanmaku(int roomid, string msg, string cookie)
         {
             HttpWebRequest request = null;
