@@ -69,45 +69,20 @@ namespace Native.Csharp.App.LuaEnv
             }
         }
 
-        private readonly static Regex MatchJCT = new Regex("(?<=bili_jct=)[^;]+");
         public static string SendDanmaku(int roomid, string msg, string cookie)
         {
             HttpWebRequest request = null;
             try
             {
                 request = (HttpWebRequest)WebRequest.Create(PostDanmakuUrl);
-                request.Method = "POST";
+                Bilibili.SetHeaders(request, "pc", cookie);
                 request.Host = "api.live.bilibili.com";
-                request.Accept = "application/json, text/javascript, */*; q=0.01";
-                request.Headers.Add("Origin", "https://live.bilibili.com");
-                request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:28.0) Gecko/20100101 Firefox/28.0";
-                request.ContentType = "application/x-www-form-urlencoded; charset=UTF-8";
                 request.Referer = "https://live.bilibili.com/" + roomid;
-                request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
-                request.Headers.Add("Accept-Language", "zh-CN,zh;q=0.8");
-                request.Headers.Add("cookie", cookie);
-                long t = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds / 1000;
-                string jct = MatchJCT.Match(cookie).Value;
+                request.Headers.Add("Origin", "https://live.bilibili.com");
+                long t = Bilibili.GetTimeStamp();
+                string jct = Bilibili.GetJCT(cookie);
                 string content = $"color=16777215&fontsize=25&mode=1&bubble=0&msg={UrlEncode(msg)}&rnd={t}&roomid={roomid}&csrf={jct}&csrf_token={jct}";
-                request.ContentLength = content.Length;
-                byte[] byteResquest = Encoding.UTF8.GetBytes(content);
-                using Stream stream = request.GetRequestStream();
-                stream.Write(byteResquest, 0, byteResquest.Length);
-                stream.Close();
-                using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                string encoding = response.ContentEncoding;
-                if (encoding == null || encoding.Length < 1)
-                {
-                    encoding = "UTF-8"; //默认编码
-                }
-                using StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding));
-                string retString = reader.ReadToEnd();
-                reader.Close();
-                reader.Dispose();
-                response.Close();
-                response.Dispose();
-                request.Abort();
-                return retString;
+                return Bilibili.POST(request, content);
             }
             catch (Exception e)
             {
@@ -123,36 +98,12 @@ namespace Native.Csharp.App.LuaEnv
             try
             {
                 request = (HttpWebRequest)WebRequest.Create(StartLiveUrl);
-                request.Method = "POST";
-                request.Accept = "application/json, text/javascript, */*; q=0.01";
+                Bilibili.SetHeaders(request, "pc", cookie);
                 request.Headers.Add("Origin", "https://link.bilibili.com");
-                request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:28.0) Gecko/20100101 Firefox/28.0";
-                request.ContentType = "application/x-www-form-urlencoded; charset=UTF-8";
                 request.Referer = "https://link.bilibili.com/p/center/index";
-                request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
-                request.Headers.Add("Accept-Language", "zh-CN,zh;q=0.9");
-                request.Headers.Add("cookie", cookie);
-                string jct = MatchJCT.Match(cookie).Value;
+                string jct = Bilibili.GetJCT(cookie);
                 string content = $"room_id={roomid}&platform=pc&area_v2={area}&csrf_token={jct}&csrf={jct}";
-                request.ContentLength = content.Length;
-                byte[] byteResquest = Encoding.UTF8.GetBytes(content);
-                using Stream stream = request.GetRequestStream();
-                stream.Write(byteResquest, 0, byteResquest.Length);
-                stream.Close();
-                using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                string encoding = response.ContentEncoding;
-                if (encoding == null || encoding.Length < 1)
-                {
-                    encoding = "UTF-8"; //默认编码
-                }
-                using StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding));
-                string retString = reader.ReadToEnd();
-                reader.Close();
-                reader.Dispose();
-                response.Close();
-                response.Dispose();
-                request.Abort();
-                return retString;
+                return Bilibili.POST(request, content);
             }
             catch (Exception e)
             {
@@ -167,36 +118,12 @@ namespace Native.Csharp.App.LuaEnv
             try
             {
                 request = (HttpWebRequest)WebRequest.Create(StopLiveUrl);
-                request.Method = "POST";
-                request.Accept = "application/json, text/javascript, */*; q=0.01";
+                Bilibili.SetHeaders(request, "pc", cookie);
                 request.Headers.Add("Origin", "https://link.bilibili.com");
-                request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:28.0) Gecko/20100101 Firefox/28.0";
-                request.ContentType = "application/x-www-form-urlencoded; charset=UTF-8";
                 request.Referer = "https://link.bilibili.com/p/center/index";
-                request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
-                request.Headers.Add("Accept-Language", "zh-CN,zh;q=0.9");
-                request.Headers.Add("cookie", cookie);
-                string jct = MatchJCT.Match(cookie).Value;
+                string jct = Bilibili.GetJCT(cookie);
                 string content = $"room_id={roomid}&platform=pc&csrf_token={jct}&csrf={jct}";
-                request.ContentLength = content.Length;
-                byte[] byteResquest = Encoding.UTF8.GetBytes(content);
-                using Stream stream = request.GetRequestStream();
-                stream.Write(byteResquest, 0, byteResquest.Length);
-                stream.Close();
-                using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                string encoding = response.ContentEncoding;
-                if (encoding == null || encoding.Length < 1)
-                {
-                    encoding = "UTF-8"; //默认编码
-                }
-                using StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding));
-                string retString = reader.ReadToEnd();
-                reader.Close();
-                reader.Dispose();
-                response.Close();
-                response.Dispose();
-                request.Abort();
-                return retString;
+                return Bilibili.POST(request, content);
             }
             catch (Exception e)
             {
@@ -211,36 +138,12 @@ namespace Native.Csharp.App.LuaEnv
             try
             {
                 request = (HttpWebRequest)WebRequest.Create(InfoUpdateUrl);
-                request.Method = "POST";
-                request.Accept = "application/json, text/javascript, */*; q=0.01";
+                Bilibili.SetHeaders(request, "pc", cookie);
                 request.Headers.Add("Origin", LiveRoomUrl);
-                request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:28.0) Gecko/20100101 Firefox/28.0";
-                request.ContentType = "application/x-www-form-urlencoded; charset=UTF-8";
                 request.Referer = $"{LiveRoomUrl}/{roomid}";
-                request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
-                request.Headers.Add("Accept-Language", "zh-CN,zh;q=0.9");
-                request.Headers.Add("cookie", cookie);
-                string jct = MatchJCT.Match(cookie).Value;
+                string jct = Bilibili.GetJCT(cookie);
                 string content = $"room_id={roomid}&area_id={area}&platform=pc&csrf_token={jct}&csrf={jct}&visit_id=";
-                request.ContentLength = content.Length;
-                byte[] byteResquest = Encoding.UTF8.GetBytes(content);
-                using Stream stream = request.GetRequestStream();
-                stream.Write(byteResquest, 0, byteResquest.Length);
-                stream.Close();
-                using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                string encoding = response.ContentEncoding;
-                if (encoding == null || encoding.Length < 1)
-                {
-                    encoding = "UTF-8"; //默认编码
-                }
-                using StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding));
-                string retString = reader.ReadToEnd();
-                reader.Close();
-                reader.Dispose();
-                response.Close();
-                response.Dispose();
-                request.Abort();
-                return retString;
+                return Bilibili.POST(request, content);
             }
             catch (Exception e)
             {
@@ -255,36 +158,12 @@ namespace Native.Csharp.App.LuaEnv
             try
             {
                 request = (HttpWebRequest)WebRequest.Create(InfoUpdateUrl);
-                request.Method = "POST";
-                request.Accept = "application/json, text/javascript, */*; q=0.01";
+                Bilibili.SetHeaders(request, "pc", cookie);
                 request.Headers.Add("Origin", LiveRoomUrl);
-                request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:28.0) Gecko/20100101 Firefox/28.0";
-                request.ContentType = "application/x-www-form-urlencoded; charset=UTF-8";
                 request.Referer = $"{LiveRoomUrl}/{roomid}";
-                request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
-                request.Headers.Add("Accept-Language", "zh-CN,zh;q=0.9");
-                request.Headers.Add("cookie", cookie);
-                string jct = MatchJCT.Match(cookie).Value;
+                string jct = Bilibili.GetJCT(cookie);
                 string content = $"room_id={roomid}&title={UrlEncode(title)}&platform=pc&csrf_token={jct}&csrf={jct}&visit_id=";
-                request.ContentLength = content.Length;
-                byte[] byteResquest = Encoding.UTF8.GetBytes(content);
-                using Stream stream = request.GetRequestStream();
-                stream.Write(byteResquest, 0, byteResquest.Length);
-                stream.Close();
-                using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                string encoding = response.ContentEncoding;
-                if (encoding == null || encoding.Length < 1)
-                {
-                    encoding = "UTF-8"; //默认编码
-                }
-                using StreamReader reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding));
-                string retString = reader.ReadToEnd();
-                reader.Close();
-                reader.Dispose();
-                response.Close();
-                response.Dispose();
-                request.Abort();
-                return retString;
+                return Bilibili.POST(request, content);
             }
             catch (Exception e)
             {
