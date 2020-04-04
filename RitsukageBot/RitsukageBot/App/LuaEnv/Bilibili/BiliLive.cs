@@ -7,9 +7,9 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static Native.Csharp.App.LuaEnv.BilibiliLiveDanmaku_Events;
+using static Native.Csharp.App.LuaEnv.Bilibili.BilibiliLiveDanmaku_Events;
 
-namespace Native.Csharp.App.LuaEnv
+namespace Native.Csharp.App.LuaEnv.Bilibili
 {
     class BiliLive
     {

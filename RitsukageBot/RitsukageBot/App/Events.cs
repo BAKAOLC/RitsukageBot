@@ -1,4 +1,5 @@
 using Native.Csharp.App.LuaEnv;
+using Native.Csharp.App.LuaEnv.Socket;
 using Native.Csharp.Sdk.Cqp.EventArgs;
 using Native.Csharp.Sdk.Cqp.Interface;
 using System;

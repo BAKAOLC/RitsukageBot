@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Native.Csharp.App.LuaEnv
+namespace Native.Csharp.App.LuaEnv.Tools
 {
     class XmlApi
     {

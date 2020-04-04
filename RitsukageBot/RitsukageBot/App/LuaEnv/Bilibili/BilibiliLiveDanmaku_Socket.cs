@@ -10,9 +10,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static Native.Csharp.App.LuaEnv.BilibiliLiveDanmaku_Events;
+using static Native.Csharp.App.LuaEnv.Bilibili.BilibiliLiveDanmaku_Events;
 
-namespace Native.Csharp.App.LuaEnv
+namespace Native.Csharp.App.LuaEnv.Bilibili
 {
     class BilibiliLiveDanmaku_Socket
     {

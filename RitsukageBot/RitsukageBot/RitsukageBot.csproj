@@ -264,31 +264,32 @@
       <DependentUpon>CQExport.tt</DependentUpon>
     </Compile>
     <Compile Include="App\CQMain.cs" />
-    <Compile Include="App\LuaEnv\BaiduTranslate.cs" />
-    <Compile Include="App\LuaEnv\Bilibili.cs" />
-    <Compile Include="App\LuaEnv\BilibiliLiveDanmaku_Events.cs" />
-    <Compile Include="App\LuaEnv\BilibiliLiveDanmaku_GiftRank.cs" />
-    <Compile Include="App\LuaEnv\BilibiliLiveDanmaku_Socket.cs" />
-    <Compile Include="App\LuaEnv\BilibiliLiveDanmaku_SocketReceiveData.cs" />
-    <Compile Include="App\LuaEnv\BiliLive.cs" />
-    <Compile Include="App\LuaEnv\ByteDataBuilder.cs" />
+    <Compile Include="App\LuaEnv\Tools\BaiduTranslate.cs" />
+    <Compile Include="App\LuaEnv\Bilibili\Bilibili.cs" />
+    <Compile Include="App\LuaEnv\Bilibili\BilibiliLiveDanmaku_Events.cs" />
+    <Compile Include="App\LuaEnv\Bilibili\BilibiliLiveDanmaku_GiftRank.cs" />
+    <Compile Include="App\LuaEnv\Bilibili\BilibiliLiveDanmaku_Socket.cs" />
+    <Compile Include="App\LuaEnv\Bilibili\BilibiliLiveDanmaku_SocketReceiveData.cs" />
+    <Compile Include="App\LuaEnv\Bilibili\BiliLive.cs" />
+    <Compile Include="App\LuaEnv\Tools\ByteDataBuilder.cs" />
     <Compile Include="App\LuaEnv\LuaStates.cs" />
-    <Compile Include="App\LuaEnv\MySQLData.cs" />
-    <Compile Include="App\LuaEnv\QRCode.cs" />
-    <Compile Include="App\LuaEnv\Rand.cs" />
+    <Compile Include="App\LuaEnv\Tools\Image.cs" />
+    <Compile Include="App\LuaEnv\Tools\MySQLData.cs" />
+    <Compile Include="App\LuaEnv\Tools\QRCode.cs" />
+    <Compile Include="App\LuaEnv\Tools\Rand.cs" />
     <Compile Include="App\LuaEnv\Settings.cs" />
-    <Compile Include="App\LuaEnv\SJFDataPack.cs" />
-    <Compile Include="App\LuaEnv\SJFOpCode.cs" />
-    <Compile Include="App\LuaEnv\TcpServer.cs" />
+    <Compile Include="App\LuaEnv\Socket\SJFDataPack.cs" />
+    <Compile Include="App\LuaEnv\Socket\SJFOpCode.cs" />
+    <Compile Include="App\LuaEnv\Socket\TcpServer.cs" />
     <Compile Include="App\LuaEnv\TimerRun.cs" />
     <Compile Include="App\LuaEnv\Utils.cs" />
-    <Compile Include="App\LuaEnv\WebSocket_Client.cs" />
-    <Compile Include="App\LuaEnv\WebSocket_Server.cs" />
-    <Compile Include="App\LuaEnv\SJFSocket.cs" />
-    <Compile Include="App\LuaEnv\WELL512.cs" />
-    <Compile Include="App\LuaEnv\WSClient.cs" />
-    <Compile Include="App\LuaEnv\WSServer.cs" />
-    <Compile Include="App\LuaEnv\XmlApi.cs" />
+    <Compile Include="App\LuaEnv\Socket\WebSocket_Client.cs" />
+    <Compile Include="App\LuaEnv\Socket\WebSocket_Server.cs" />
+    <Compile Include="App\LuaEnv\Socket\SJFSocket.cs" />
+    <Compile Include="App\LuaEnv\Tools\WELL512.cs" />
+    <Compile Include="App\LuaEnv\Socket\WSClient.cs" />
+    <Compile Include="App\LuaEnv\Socket\WSServer.cs" />
+    <Compile Include="App\LuaEnv\Tools\XmlApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repair\Core\Kernel32.cs" />
     <Compile Include="Repair\Enum\LoadLibraryFlags.cs" />
@@ -321,6 +322,10 @@
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Components\Components.csproj">
+      <Project>{1c3a03ca-5e55-4cc4-9746-194a4188960a}</Project>
+      <Name>Components</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Native.Csharp.Sdk\Native.Csharp.Sdk.csproj">
       <Project>{797eaebc-4d5b-4eef-87f4-a508fda2cb6a}</Project>
       <Name>Native.Csharp.Sdk</Name>

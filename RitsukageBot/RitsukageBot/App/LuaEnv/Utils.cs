@@ -1,4 +1,6 @@
 using LibGit2Sharp;
+using Native.Csharp.App.LuaEnv.Socket;
+using Native.Csharp.App.LuaEnv.Tools;
 using Native.Csharp.Sdk.Cqp.Enum;
 using Native.Csharp.Tool.IniConfig.Linq;
 using Newtonsoft.Json;

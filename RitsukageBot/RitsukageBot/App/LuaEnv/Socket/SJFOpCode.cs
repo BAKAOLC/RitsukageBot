@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Native.Csharp.App.LuaEnv
+namespace Native.Csharp.App.LuaEnv.Socket
 {
 	/// <summary>
 	/// 正邪Bot交互操作类型

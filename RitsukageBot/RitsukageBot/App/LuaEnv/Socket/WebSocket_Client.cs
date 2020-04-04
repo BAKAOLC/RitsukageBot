@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebSocket4Net;
 
-namespace Native.Csharp.App.LuaEnv
+namespace Native.Csharp.App.LuaEnv.Socket
 {
     class WebSocket_Client
     {

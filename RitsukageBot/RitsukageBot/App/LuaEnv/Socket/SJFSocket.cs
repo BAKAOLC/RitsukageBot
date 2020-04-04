@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WebSocketSharp;
 
-namespace Native.Csharp.App.LuaEnv
+namespace Native.Csharp.App.LuaEnv.Socket
 {
     class SJFSocket
     {

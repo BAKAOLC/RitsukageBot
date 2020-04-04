@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Native.Csharp.App.LuaEnv
+namespace Native.Csharp.App.LuaEnv.Bilibili
 {
     public enum BilibiliLiveDanmaku_SocketReceiveDataType
     {

@@ -5,7 +5,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Web;
 
-namespace Native.Csharp.App.LuaEnv
+namespace Native.Csharp.App.LuaEnv.Tools
 {
     class BaiduTranslate
     {

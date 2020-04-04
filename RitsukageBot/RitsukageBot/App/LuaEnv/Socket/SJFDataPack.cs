@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Native.Csharp.App.LuaEnv.Tools;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Native.Csharp.App.LuaEnv
+namespace Native.Csharp.App.LuaEnv.Socket
 {
     class SJFDataPack
     {
