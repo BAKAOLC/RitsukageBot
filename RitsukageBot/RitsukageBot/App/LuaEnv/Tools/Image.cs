@@ -47,44 +47,48 @@ namespace Native.Csharp.App.LuaEnv.Tools
             return Convert.ToBase64String(arr);
         }
 
-        public void DrawText(int x, int y, string text, string type = "黑体", int size = 9, int r = 0, int g = 0, int b = 0)
+        public BaseImage DrawText(int x, int y, string text, string type = "黑体", int size = 9, int r = 0, int g = 0, int b = 0)
         {
             using Graphics pic = GetGraphics();
             using Font font = new Font(type, size);
             Color myColor = Color.FromArgb(r, g, b);
             using SolidBrush myBrush = new SolidBrush(myColor);
             pic.DrawString(text, font, myBrush, new PointF(x, y));
+            return this;
         }
 
-        public void DrawRectangle(int x, int y, int width, int height, int r = 0, int g = 0, int b = 0)
+        public BaseImage DrawRectangle(int x, int y, int width, int height, int r = 0, int g = 0, int b = 0)
         {
             using Graphics pic = GetGraphics();
             Color myColor = Color.FromArgb(r, g, b);
             using SolidBrush myBrush = new SolidBrush(myColor);
             pic.FillRectangle(myBrush, new Rectangle(x, y, width, height));
+            return this;
         }
 
-        public void DrawEllipse(int x, int y, int width, int height, int r = 0, int g = 0, int b = 0)
+        public BaseImage DrawEllipse(int x, int y, int width, int height, int r = 0, int g = 0, int b = 0)
         {
             using Graphics pic = GetGraphics();
             Color myColor = Color.FromArgb(r, g, b);
             using Pen myBrush = new Pen(myColor);
             pic.DrawEllipse(myBrush, new Rectangle(x, y, width, height));
+            return this;
         }
 
-        public void DrawImage(string path, int x, int y, int width = 0, int height = 0)
+        public BaseImage DrawImage(string path, int x, int y, int width = 0, int height = 0)
         {
             if (!File.Exists(path))
-                return;
+                return this;
             using Bitmap b = new Bitmap(path);
             using Graphics pic = GetGraphics();
             if (width != 0 && height != 0)
                 pic.DrawImage(b, x, y, width, height);
             else if (width == 0 && height == 0)
                 pic.DrawImage(b, x, y);
+            return this;
         }
 
-        public void SetImageSize(int width, int height)
+        public BaseImage SetImageSize(int width, int height)
         {
             int basex = width < 0 ? -width : 0;
             int basey = height < 0 ? -height : 0;
@@ -92,9 +96,29 @@ namespace Native.Csharp.App.LuaEnv.Tools
             Graphics pic = GetGraphics(img);
             pic.DrawImage(Source, basex, basey, width, height);
             Source = img;
+            return this;
         }
 
-        public void LeftRotateImage()
+        public BaseImage CutImage(int x, int y, int width, int height)
+        {
+            int basex = width < 0 ? x - width : x;
+            int basey = height < 0 ? y - height : y;
+            int dx = width < 0 ? -1 : 1;
+            int dy = height < 0 ? -1 : 1;
+            Bitmap img = new Bitmap(Math.Abs(width), Math.Abs(height));
+            for (int i = 0; i < img.Width; i++)
+            {
+                for (int j = 0; j < img.Height; j++)
+                {
+                    if (basex + dx * i >= 0 && basex + dx * i < Source.Width && basey + dy * j > 0 && basey + dy * j < Source.Height)
+                        img.SetPixel(i, j, Source.GetPixel(basex + dx * i, basey + dy * j));
+                }
+            }
+            Source = img;
+            return this;
+        }
+
+        public BaseImage LeftRotateImage()
         {
             Bitmap img = new Bitmap(Height, Width);
             for (int x = 0; x < Width; x++)
@@ -105,9 +129,10 @@ namespace Native.Csharp.App.LuaEnv.Tools
                 }
             }
             Source = img;
+            return this;
         }
 
-        public void RightRotateImage()
+        public BaseImage RightRotateImage()
         {
             Bitmap img = new Bitmap(Height, Width);
             for (int x = 0; x < Width; x++)
@@ -118,9 +143,10 @@ namespace Native.Csharp.App.LuaEnv.Tools
                 }
             }
             Source = img;
+            return this;
         }
 
-        public void TranslatePixel(int dx, int dy)
+        public BaseImage TranslatePixel(int dx, int dy)
         {
             Bitmap img = new Bitmap(Width, Height);
             for (int x = 0; x < Width; x++)
@@ -131,9 +157,10 @@ namespace Native.Csharp.App.LuaEnv.Tools
                 }
             }
             Source = img;
+            return this;
         }
 
-        public void TranslateHSV(float h, float s, float v)
+        public BaseImage TranslateHSV(float h, float s, float v)
         {
             ImageExtensions.HSVColor hsv;
             for (int x = 0; x < Width; x++)
@@ -143,13 +170,15 @@ namespace Native.Csharp.App.LuaEnv.Tools
                     hsv = ImageExtensions.HSVColor.FromRGB(Source.GetPixel(x, y));
                     hsv.hue += h;
                     hsv.hue %= 360;
+                    hsv.hue = hsv.hue < 0 ? 360 + hsv.hue : hsv.hue;
                     hsv.saturation += s;
                     hsv.saturation = Math.Min(Math.Max(hsv.saturation, 0), 100);
                     hsv.value += v;
                     hsv.value = Math.Min(Math.Max(hsv.value, 0), 100);
-                    Source.SetPixel(x, y, hsv.ToRGB());
+                    Source.SetPixel(x, y, hsv.ToRGB(Source.GetPixel(x, y).A));
                 }
             }
+            return this;
         }
 
         public BaseImage GetGrayImage()
@@ -367,7 +396,7 @@ namespace Native.Csharp.App.LuaEnv.Tools
                 value = v;
             }
 
-            public Color ToRGB()
+            public Color ToRGB(int alpha = 255)
             {
                 hue -= Convert.ToSingle(Math.Floor(hue / 360) * 360);
                 saturation /= 100;
@@ -385,17 +414,17 @@ namespace Native.Csharp.App.LuaEnv.Tools
                 switch (h)
                 {
                     case 0:
-                        return Color.FromArgb(255, v, c, a);
+                        return Color.FromArgb(alpha, v, c, a);
                     case 1:
-                        return Color.FromArgb(255, b, v, a);
+                        return Color.FromArgb(alpha, b, v, a);
                     case 2:
-                        return Color.FromArgb(255, a, v, c);
+                        return Color.FromArgb(alpha, a, v, c);
                     case 3:
-                        return Color.FromArgb(255, a, b, v);
+                        return Color.FromArgb(alpha, a, b, v);
                     case 4:
-                        return Color.FromArgb(255, c, a, v);
+                        return Color.FromArgb(alpha, c, a, v);
                     case 5:
-                        return Color.FromArgb(255, v, a, b);
+                        return Color.FromArgb(alpha, v, a, b);
                     default:
                         throw new NotImplementedException();
                 }
