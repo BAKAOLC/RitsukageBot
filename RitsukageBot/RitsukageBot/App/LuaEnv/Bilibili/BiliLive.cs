@@ -180,8 +180,8 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
 
         private static void SocketConnected(object sender, SocketConnectedArgs e)
         {
-            Common.AppData.CQLog.Info("Bilibili Live Danmaku", $"Room {e.RoomID} connected");
-            LuaEnv.LuaStates.Run("Bilibili Live Danmaku", "SocketConnected", new
+            Common.AppData.CQLog.Info("Bilibili Live Danmaku", $"[Room {e.RoomID}] 已连接");
+            LuaStates.Run("Bilibili Live Danmaku", "SocketConnected", new
             {
                 e.RoomID
             });
@@ -189,12 +189,23 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
 
         private static void SocketReceivedDanmaku(object sender, SocketReceivedDanmakuArgs e)
         {
-            if (e.Danmaku.Type == BilibiliLiveDanmaku_SocketReceiveDataType.Comment)
+            switch (e.Danmaku.Type)
             {
-                Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", $"Room {e.RoomID} received danmaku:");
-                Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", e.Danmaku.CommentText);
+                case BilibiliLiveDanmaku_SocketReceiveDataType.LiveStart:
+                    Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", $"[Room {e.RoomID}] 直播开始");
+                    break;
+                case BilibiliLiveDanmaku_SocketReceiveDataType.LiveEnd:
+                    Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", $"[Room {e.RoomID}] 直播结束");
+                    break;
+                case BilibiliLiveDanmaku_SocketReceiveDataType.Comment:
+                    Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", $"[Room {e.RoomID}] {e.Danmaku.UserName}:{e.Danmaku.CommentText}");
+                    break;
+                case BilibiliLiveDanmaku_SocketReceiveDataType.GiftSend:
+                    Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", $"[Room {e.RoomID}] {e.Danmaku.UserName} 赠送了 {e.Danmaku.GiftCount} 个 {e.Danmaku.GiftName}");
+                    break;
             }
-            LuaEnv.LuaStates.Run("Bilibili Live Danmaku", "ReceivedDanmaku", new
+            
+            LuaStates.Run("Bilibili Live Danmaku", "ReceivedDanmaku", new
             {
                 e.RoomID,
                 e.Danmaku
@@ -203,7 +214,7 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
 
         private static void SocketReceivedUserCount(object sender, SocketReceivedUserCountArgs e)
         {
-            LuaEnv.LuaStates.Run("Bilibili Live Danmaku", "ReceivedUserCount", new
+            LuaStates.Run("Bilibili Live Danmaku", "ReceivedUserCount", new
             {
                 e.RoomID,
                 e.UserCount
@@ -214,11 +225,10 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
         {
             if (e.ByError)
             {
-                Common.AppData.CQLog.Error("Bilibili Live Danmaku", $"Error from {e.RoomID}:");
-                Common.AppData.CQLog.Error("Bilibili Live Danmaku", e.Error.Message);
+                Common.AppData.CQLog.Error("Bilibili Live Danmaku", $"Error from {e.RoomID}: {e.Error.Message}");
             }
-            Common.AppData.CQLog.Info("Bilibili Live Danmaku", $"Room {e.RoomID} disconnected");
-            LuaEnv.LuaStates.Run("Bilibili Live Danmaku", "SocketDisonnected", new
+            Common.AppData.CQLog.Info("Bilibili Live Danmaku", $"[Room {e.RoomID}] 已断开连接");
+            LuaStates.Run("Bilibili Live Danmaku", "SocketDisonnected", new
             {
                 e.RoomID,
                 e.ByError,
@@ -228,8 +238,8 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
 
         private static void SocketLogMessage(object sender, SocketLogMessageArgs e)
         {
-            Common.AppData.CQLog.Info("Bilibili Live Danmaku", $"Room {e.RoomID}: {e.Message}");
-            LuaEnv.LuaStates.Run("Bilibili Live Danmaku", "SocketLogMessage", new
+            Common.AppData.CQLog.Info("Bilibili Live Danmaku", $"[Room {e.RoomID}] {e.Message}");
+            LuaStates.Run("Bilibili Live Danmaku", "SocketLogMessage", new
             {
                 e.RoomID,
                 e.Message
