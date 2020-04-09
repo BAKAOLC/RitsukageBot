@@ -199,6 +199,23 @@ namespace Native.Csharp.App.LuaEnv.Tools
             return img;
         }
 
+        public BaseImage GetAntiColorImage()
+        {
+            int rgb;
+            Color c;
+            BaseImage img = Clone();
+            Bitmap bmp = img.Source;
+            for (int x = 0; x < bmp.Width; x++)
+            {
+                for (int y = 0; y < bmp.Height; y++)
+                {
+                    c = bmp.GetPixel(x, y);;
+                    bmp.SetPixel(x, y, Color.FromArgb(c.A, 255 - c.R, 255 - c.G, 255 - c.B));
+                }
+            }
+            return img;
+        }
+
         private Graphics GetGraphics(Bitmap img = null)
         {
             img ??= Source;
