@@ -292,6 +292,8 @@ namespace Native.Csharp.App.LuaEnv.Tools
 
         public int FrameCount { get => Frames.Count; }
 
+        public Color TransparentColor = Color.Empty;
+
         public GifManager() {}
 
         public GifManager(string path)
@@ -311,7 +313,7 @@ namespace Native.Csharp.App.LuaEnv.Tools
             gifEncoder.Start(fs);
             gifEncoder.SetRepeat(0);
             gifEncoder.SetQuality(256);
-            gifEncoder.SetTransparent(Color.Black);
+            gifEncoder.SetTransparent(TransparentColor);
             for (int i = 0; i < FrameCount; i++)
             {
                 GifFrame frame = (GifFrame)Frames[i];
@@ -337,6 +339,109 @@ namespace Native.Csharp.App.LuaEnv.Tools
             Image = img;
             Delay = delay;
         }
+    }
+
+    class ColorTools
+    {
+        private int a = 255;
+        private int r = 0;
+        private int g = 0;
+        private int b = 0;
+
+        public ColorTools(Color c)
+        {
+            A = c.A;
+            R = c.R;
+            G = c.G;
+            B = c.B;
+        }
+
+        public ColorTools(int R, int G, int B)
+        {
+            this.R = R;
+            this.G = G;
+            this.B = B;
+        }
+
+        public ColorTools(int A, int R, int G, int B)
+        {
+            this.A = A;
+            this.R = R;
+            this.G = G;
+            this.B = B;
+        }
+
+        public int A {
+            get => a;
+            set
+            {
+                a = value % 256;
+                a = a < 0 ? 256 + a : a;
+            }
+        }
+
+        public int R
+        {
+            get => r;
+            set
+            {
+                r = value % 256;
+                r = r < 0 ? 256 + r : r;
+            }
+        }
+
+        public int G
+        {
+            get => g;
+            set
+            {
+                g = value % 256;
+                g = g < 0 ? 256 + g : g;
+            }
+        }
+
+        public int B
+        {
+            get => b;
+            set
+            {
+                b = value % 256;
+                b = b < 0 ? 256 + b : b;
+            }
+        }
+
+        public void TranslateHSV(int h = 0, int s = 0, int v = 0)
+        {
+            var hsv = ImageExtensions.HSVColor.FromRGB(GetColor());
+            hsv.hue += h;
+            hsv.hue %= 360;
+            hsv.hue = hsv.hue < 0 ? 360 + hsv.hue : hsv.hue;
+            hsv.saturation += s;
+            hsv.saturation = Math.Min(Math.Max(hsv.saturation, 0), 100);
+            hsv.value += v;
+            hsv.value = Math.Min(Math.Max(hsv.value, 0), 100);
+            var rgb = hsv.ToRGB();
+            R = rgb.R;
+            G = rgb.G;
+            B = rgb.B;
+        }
+
+        public void ToGray()
+        {
+            int rgb = (int)Math.Round(0.299 * R + 0.587 * G + 0.114 * B);
+            R = rgb;
+            G = rgb;
+            B = rgb;
+        }
+
+        public void ToAntiColor()
+        {
+            R = 255 - R;
+            G = 255 - G;
+            B = 255 - B;
+        }
+
+        public Color GetColor() => Color.FromArgb(a, r, g, b);
     }
 
     public static class ImageExtensions
