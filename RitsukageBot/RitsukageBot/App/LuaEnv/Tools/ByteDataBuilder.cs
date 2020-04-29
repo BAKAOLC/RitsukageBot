@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Native.Csharp.App.LuaEnv.Tools
 {
-    class ByteDataBuilder
-    {
-        private List<byte> data = new List<byte>();
+	class ByteDataBuilder
+	{
+		private readonly List<byte> data = new List<byte>();
 
 		public int WritePointer = 0;
 
@@ -20,27 +20,30 @@ namespace Native.Csharp.App.LuaEnv.Tools
 			}
 		}
 
-		public void Write(short value) => Write(GetBytes(value));
-		public void Write(int value) => Write(GetBytes(value));
-		public void Write(long value) => Write(GetBytes(value));
-		public void Write(string value) => Write(GetBytes(value));
+		public void Write(short value, bool overwrite = true) => Write(GetBytes(value), overwrite);
+		public void Write(int value, bool overwrite = true) => Write(GetBytes(value), overwrite);
+		public void Write(long value, bool overwrite = true) => Write(GetBytes(value), overwrite);
+		public void Write(string value, bool overwrite = true) => Write(GetBytes(value), overwrite);
 
 		public byte[] GetData() => data.ToArray<byte>();
 
-		private void Write(byte[] bs)
+		private void Write(byte[] bs, bool overwrite = true)
 		{
 			for (int i = 0; i < bs.Length; ++i)
 			{
-				data.Insert(WritePointer++, bs[i]);
+				if (overwrite && WritePointer < data.Count)
+					data[WritePointer++] = bs[i];
+				else
+					data.Insert(WritePointer++, bs[i]);
 			}
 		}
 
-        private byte[] GetBytes(short value)
-        {
-            byte[] bs = new byte[2];
-            bs[0] = (byte)((value >> 0) & 0xff);
-            bs[1] = (byte)((value >> 8) & 0xff);
-            return bs;
+		private byte[] GetBytes(short value)
+		{
+			byte[] bs = new byte[2];
+			bs[0] = (byte)((value >> 0) & 0xff);
+			bs[1] = (byte)((value >> 8) & 0xff);
+			return bs;
 		}
 
 		private byte[] GetBytes(int value)

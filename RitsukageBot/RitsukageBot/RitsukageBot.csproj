@@ -264,6 +264,10 @@
       <DependentUpon>CQExport.tt</DependentUpon>
     </Compile>
     <Compile Include="App\CQMain.cs" />
+    <Compile Include="App\LuaEnv\Socket\Ritsukage\DayCheckInMonth.cs" />
+    <Compile Include="App\LuaEnv\Socket\Ritsukage\RUOpCode.cs" />
+    <Compile Include="App\LuaEnv\Socket\Ritsukage\RUPack.cs" />
+    <Compile Include="App\LuaEnv\Socket\Ritsukage\RUPackBaseJson.cs" />
     <Compile Include="App\LuaEnv\Tools\BaiduTranslate.cs" />
     <Compile Include="App\LuaEnv\Bilibili\Bilibili.cs" />
     <Compile Include="App\LuaEnv\Bilibili\BilibiliLiveDanmaku_Events.cs" />

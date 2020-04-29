@@ -41,7 +41,7 @@ namespace Native.Csharp.App
     {
         public void CQStartup(object sender, CQStartupEventArgs e)
         {
-            
+
         }
     }
 
@@ -56,8 +56,8 @@ namespace Native.Csharp.App
                     fromDiscuss = e.FromDiscuss.Id,
                     qq = e.FromQQ.Id,
                     msg = e.Message.Text,
-                    id = e.Message.Id
-                });
+                    id = e.Message.Id,
+                }); ;
             }
         }
     }
@@ -106,7 +106,7 @@ namespace Native.Csharp.App
                     tag = e.ResponseFlag
                 });
             }
-            else if(e.SubType == Sdk.Cqp.Enum.CQGroupAddRequestType.RobotBeInviteAddGroup)
+            else if (e.SubType == Sdk.Cqp.Enum.CQGroupAddRequestType.RobotBeInviteAddGroup)
             {
                 LuaEnv.LuaStates.Run("main", "GroupAddInvite", new
                 {
@@ -137,7 +137,7 @@ namespace Native.Csharp.App
                     time = Utils.DateTimeToInt(e.BanSpeakTimeSpan ?? new TimeSpan(0)),
                 });
             }
-            else if(e.SubType == Sdk.Cqp.Enum.CQGroupBanSpeakType.RemoveBanSpeak)
+            else if (e.SubType == Sdk.Cqp.Enum.CQGroupBanSpeakType.RemoveBanSpeak)
             {
                 long banqq = 0;
                 if (e.BeingOperateQQ != null)
@@ -165,7 +165,7 @@ namespace Native.Csharp.App
                     qq = e.BeingOperateQQ.Id,
                 });
             }
-            else if(e.SubType == Sdk.Cqp.Enum.CQGroupManageChangeType.RemoveManage)
+            else if (e.SubType == Sdk.Cqp.Enum.CQGroupManageChangeType.RemoveManage)
             {
                 LuaEnv.LuaStates.Run(e.FromGroup.Id, "GroupManageRemove", new
                 {
@@ -237,7 +237,8 @@ namespace Native.Csharp.App
                     qq = e.FromQQ.Id,
                     msg = e.Message.Text,
                     id = e.Message.Id,
-                    fromAnonymous = e.IsFromAnonymous
+                    fromAnonymous = e.IsFromAnonymous,
+                    ReceivedMessage = new Sdk.Cqp.Model.ReceivedMessage(Common.AppData.CQApi, e.FromGroup.Id, e.FromQQ.Id, e.Message.Id, e.Message.Text)
                 });
             }
         }
@@ -268,7 +269,8 @@ namespace Native.Csharp.App
                 from = e.SubType,
                 qq = e.FromQQ.Id,
                 msg = e.Message.Text,
-                id = e.Message.Id
+                id = e.Message.Id,
+                ReceivedMessage = new Sdk.Cqp.Model.ReceivedMessage(Common.AppData.CQApi, e.FromQQ.Id, e.Message.Id, e.Message.Text)
             });
         }
     }

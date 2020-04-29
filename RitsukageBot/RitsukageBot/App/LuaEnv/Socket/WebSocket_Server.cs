@@ -11,6 +11,7 @@ namespace Native.Csharp.App.LuaEnv.Socket
     class WebSocket_Server
     {
         public event Action<WebSocketSession, string> MessageReceived;
+        public event Action<WebSocketSession, byte[]> DataReceived;
         public event Action<WebSocketSession> NewConnected;
         public event Action<WebSocketSession> Closed;
 
@@ -59,6 +60,7 @@ namespace Native.Csharp.App.LuaEnv.Socket
                 WebSocket.Setup(new RootConfig(), serverConfig, socketServerFactory);
                 WebSocket.NewSessionConnected += NewSessionConnected;
                 WebSocket.NewMessageReceived += NewMessageReceived;
+                WebSocket.NewDataReceived += NewDataReceived;
                 WebSocket.SessionClosed += SessionClosed;
 
                 isSetuped = WebSocket.Start();
@@ -76,6 +78,11 @@ namespace Native.Csharp.App.LuaEnv.Socket
         void NewMessageReceived(WebSocketSession session, string value)
         {
             MessageReceived?.Invoke(session, value.ToString());
+        }
+        
+        void NewDataReceived(WebSocketSession session, byte[] data)
+        {
+            DataReceived?.Invoke(session, data);
         }
 
         void NewSessionConnected(WebSocketSession session)
@@ -114,6 +121,16 @@ namespace Native.Csharp.App.LuaEnv.Socket
             });
         }
 
+        public void SendMessage(WebSocketSession session, byte[] data)
+        {
+            if (!_isRunning) return;
+
+            Task.Factory.StartNew(() => {
+                if (session != null && session.Connected)
+                    session.Send(data, 0, data.Length);
+            });
+        }
+
         public void BoardcastMessage(string message)
         {
             if (!_isRunning) return;
@@ -123,6 +140,19 @@ namespace Native.Csharp.App.LuaEnv.Socket
                 Task.Factory.StartNew(() => {
                     if (session != null && session.Connected)
                         session.Send(message);
+                });
+            }
+        }
+
+        public void BoardcastMessage(byte[] data)
+        {
+            if (!_isRunning) return;
+
+            foreach (WebSocketSession session in WebSocket.GetAllSessions())
+            {
+                Task.Factory.StartNew(() => {
+                    if (session != null && session.Connected)
+                        session.Send(data, 0, data.Length);
                 });
             }
         }

@@ -33,6 +33,17 @@ namespace Native.Csharp.App.LuaEnv.Socket
             });
         }
 
+        private static void Server_DataReceived(SuperWebSocket.WebSocketSession client, byte[] data)
+        {
+            Ritsukage.RUPack pack = new Ritsukage.RUPack(data);
+            Common.AppData.CQLog.InfoReceive("WebSocket Server", pack.ToString());
+            LuaEnv.LuaStates.Run("ws_server", "ClientData", new
+            {
+                client,
+                pack
+            });
+        }
+
         private static void Server_Closed(SuperWebSocket.WebSocketSession client)
         {
             Common.AppData.CQLog.Info("WebSocket Server", "A client has been closed.");
@@ -52,6 +63,7 @@ namespace Native.Csharp.App.LuaEnv.Socket
             {
                 _server = new WebSocket_Server();
                 _server.MessageReceived += Server_MessageReceived;
+                _server.DataReceived += Server_DataReceived;
                 _server.NewConnected += Server_NewConnected;
                 _server.Closed += Server_Closed;
             }
@@ -78,6 +90,13 @@ namespace Native.Csharp.App.LuaEnv.Socket
             if (!_isRunning) return;
 
             _server.BoardcastMessage(msg);
+        }
+
+        public static void BoardcastData(byte[] data)
+        {
+            if (!_isRunning) return;
+
+            _server.BoardcastMessage(data);
         }
     }
 }
