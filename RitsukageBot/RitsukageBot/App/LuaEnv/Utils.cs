@@ -46,10 +46,14 @@ namespace Native.Csharp.App.LuaEnv
                 setting.WebSocketServerPort = record.WebSocketServerPort;
                 setting.WebSocketClientConnect = record.WebSocketClientConnect;
                 setting.SJFSocketConnect = record.SJFSocketConnect;
+                setting.HttpListenHost = record.HttpListenHost;
+                setting.HttpListenSub = record.HttpListenSub;
+                setting.HttpListenPort = record.HttpListenPort;
                 setting.TcpServerEnable = record.TcpServerEnable;
                 setting.WebSocketServerEnable = record.WebSocketServerEnable;
                 setting.WebSocketClientEnable = record.WebSocketClientEnable;
                 setting.SJFSocketEnable = record.SJFSocketEnable;
+                setting.HttpListenEnable = record.HttpListenEnable;
             }
             else
             {
@@ -58,6 +62,7 @@ namespace Native.Csharp.App.LuaEnv
                 setting.WebSocketServerEnable = setting.WebSocketServerEnable;
                 setting.WebSocketClientEnable = setting.WebSocketClientEnable;
                 setting.SJFSocketEnable = setting.SJFSocketEnable;
+                setting.HttpListenEnable = setting.HttpListenEnable;
             }
             //TimerRun.Start();//清理文件定时器任务，可能存在内存泄漏问题，暂时不加这个功能
             TcpServer.SendList();//tcp定时器任务

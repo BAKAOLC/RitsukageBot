@@ -96,7 +96,28 @@ namespace Native.Csharp.App.LuaEnv.Socket
         {
             if (!_isRunning) return;
 
-            _server.BoardcastMessage(data);
+            _server.BoardcastData(data);
+        }
+
+        public static void SendMessage(SuperWebSocket.WebSocketSession client, string msg)
+        {
+            if (!_isRunning) return;
+
+            _server.SendMessage(client, msg);
+        }
+
+        public static void SendData(SuperWebSocket.WebSocketSession client, byte[] data)
+        {
+            if (!_isRunning) return;
+
+            _server.SendData(client, data);
+        }
+
+        public static void SendData(SuperWebSocket.WebSocketSession client, Ritsukage.RUPack pack)
+        {
+            if (!_isRunning) return;
+
+            _server.SendData(client, pack.Encode());
         }
     }
 }

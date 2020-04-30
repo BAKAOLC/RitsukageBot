@@ -19,6 +19,10 @@ namespace Native.Csharp.App.LuaEnv
         public string WebSocketClientConnect = "ws://localhost:20020/";
         public bool SJFSocketEnable = false;
         public string SJFSocketConnect = "ws://localhost:9961/";
+        public bool HttpListenEnable = false;
+        public string HttpListenHost = "+";
+        public string HttpListenSub = "";
+        public int HttpListenPort = 20030;
     }
 
     [PropertyChanged.AddINotifyPropertyChangedInterface]
@@ -152,6 +156,71 @@ namespace Native.Csharp.App.LuaEnv
                     {
                         SJFSocket.Stop();
                         SJFSocket.Start();
+                    }
+                }
+                Save();
+            }
+        }
+
+        public bool HttpListenEnable
+        {
+            get => record.HttpListenEnable;
+            set
+            {
+                record.HttpListenEnable = value;
+                if (value)
+                    HTTPListener.Start(HttpListenHost, HttpListenSub, HttpListenPort);
+                else
+                    HTTPListener.Stop();
+                Save();
+            }
+        }
+        public string HttpListenHost
+        {
+            get => record.HttpListenHost;
+            set
+            {
+                if (record.HttpListenHost != value)
+                {
+                    record.HttpListenHost = value;
+                    if (HttpListenEnable)
+                    {
+                        HTTPListener.Stop();
+                        HTTPListener.Start(HttpListenHost, HttpListenSub, HttpListenPort);
+                    }
+                }
+                Save();
+            }
+        }
+        public string HttpListenSub
+        {
+            get => record.HttpListenSub;
+            set
+            {
+                if (record.HttpListenSub != value)
+                {
+                    record.HttpListenSub = value;
+                    if (HttpListenEnable)
+                    {
+                        HTTPListener.Stop();
+                        HTTPListener.Start(HttpListenHost, HttpListenSub, HttpListenPort);
+                    }
+                }
+                Save();
+            }
+        }
+        public int HttpListenPort
+        {
+            get => record.HttpListenPort;
+            set
+            {
+                if (record.HttpListenPort != value)
+                {
+                    record.HttpListenPort = value;
+                    if (HttpListenEnable)
+                    {
+                        HTTPListener.Stop();
+                        HTTPListener.Start(HttpListenHost, HttpListenSub, HttpListenPort);
                     }
                 }
                 Save();

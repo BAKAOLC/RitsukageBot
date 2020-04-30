@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,6 +38,11 @@ namespace Native.Csharp.App.LuaEnv.Socket.Ritsukage
                 Record = new bool[DateTime.DaysInMonth(year, month)];
             else
                 Record = record;
+        }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
         }
     }
 }

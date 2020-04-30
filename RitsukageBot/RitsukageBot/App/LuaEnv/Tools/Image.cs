@@ -201,7 +201,6 @@ namespace Native.Csharp.App.LuaEnv.Tools
 
         public BaseImage GetAntiColorImage()
         {
-            int rgb;
             Color c;
             BaseImage img = Clone();
             Bitmap bmp = img.Source;

@@ -121,7 +121,7 @@ namespace Native.Csharp.App.LuaEnv.Socket
             });
         }
 
-        public void SendMessage(WebSocketSession session, byte[] data)
+        public void SendData(WebSocketSession session, byte[] data)
         {
             if (!_isRunning) return;
 
@@ -144,7 +144,7 @@ namespace Native.Csharp.App.LuaEnv.Socket
             }
         }
 
-        public void BoardcastMessage(byte[] data)
+        public void BoardcastData(byte[] data)
         {
             if (!_isRunning) return;
 
