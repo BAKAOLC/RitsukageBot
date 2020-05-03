@@ -334,7 +334,7 @@ namespace Native.Csharp.App.LuaEnv
         /// <param name="fileName">路径</param>
         /// <param name="timeout">超时时间</param>
         /// <returns>下载结果</returns>
-        public static bool HttpDownload(string Url, string fileName, long maxLength, long timeout = 5000)
+        public static bool HttpDownload(string Url, string fileName, long maxLength, long timeout = 5000, string referer = "")
         {
             HttpWebRequest request = null;
             try
@@ -352,6 +352,8 @@ namespace Native.Csharp.App.LuaEnv
                 request.ContentType = "text/html;charset=UTF-8";
                 request.Timeout = (int)timeout;
                 request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36 Vivaldi/2.2.1388.37";
+                if (!string.IsNullOrWhiteSpace(referer))
+                    request.Referer = referer;
 
                 using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 if (response.ContentLength < maxLength)//1024 * 1024 * 20)//超过20M的文件不下载
@@ -405,7 +407,7 @@ namespace Native.Csharp.App.LuaEnv
         /// GET 请求与获取结果
         /// </summary>
         public static string HttpGet(string Url, string postDataStr = "", long timeout = 5000,
-            string cookie = "")
+            string cookie = "", string referer = "")
         {
             HttpWebRequest request = null;
             try
@@ -426,6 +428,8 @@ namespace Native.Csharp.App.LuaEnv
                 request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36 Vivaldi/2.2.1388.37";
                 if (cookie != "")
                     request.Headers.Add("cookie", cookie);
+                if (!string.IsNullOrWhiteSpace(referer))
+                    request.Referer = referer;
 
                 using HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 string encoding = response.ContentEncoding;
@@ -457,7 +461,7 @@ namespace Native.Csharp.App.LuaEnv
         /// POST请求与获取结果
         /// </summary>
         public static string HttpPost(string Url, string postDataStr, long timeout = 5000,
-            string cookie = "", string contentType = "application/x-www-form-urlencoded")
+            string cookie = "", string contentType = "application/x-www-form-urlencoded", string referer = "")
         {
             HttpWebRequest request = null;
             try
@@ -480,6 +484,8 @@ namespace Native.Csharp.App.LuaEnv
                 request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36 Vivaldi/2.2.1388.37";
                 if (cookie != "")
                     request.Headers.Add("cookie", cookie);
+                if (!string.IsNullOrWhiteSpace(referer))
+                    request.Referer = referer;
 
                 using Stream stream = request.GetRequestStream();
                 stream.Write(byteResquest, 0, byteResquest.Length);

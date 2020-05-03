@@ -96,6 +96,7 @@ namespace Native.Csharp.App
     {
         public void GroupAddRequest(object sender, CQGroupAddRequestEventArgs e)
         {
+            LuaEnv.Tools.Manager.GroupManager.Update();
             if (e.SubType == Sdk.Cqp.Enum.CQGroupAddRequestType.ApplyAddGroup)
             {
                 LuaEnv.LuaStates.Run("main", "GroupAddRequest", new
@@ -157,6 +158,7 @@ namespace Native.Csharp.App
     {
         public void GroupManageChange(object sender, CQGroupManageChangeEventArgs e)
         {
+            LuaEnv.Tools.Manager.GroupManager.GetGroup(e.FromGroup).Update();
             if (e.SubType == Sdk.Cqp.Enum.CQGroupManageChangeType.SetManage)
             {
                 LuaEnv.LuaStates.Run(e.FromGroup.Id, "GroupManageSet", new
@@ -180,6 +182,7 @@ namespace Native.Csharp.App
     {
         public void GroupMemberDecrease(object sender, CQGroupMemberDecreaseEventArgs e)
         {
+            LuaEnv.Tools.Manager.GroupManager.Update();
             if (e.SubType == Sdk.Cqp.Enum.CQGroupMemberDecreaseType.ExitGroup)
             {
                 LuaEnv.LuaStates.Run(e.FromGroup.Id, "GroupMemberExit", new
@@ -204,6 +207,7 @@ namespace Native.Csharp.App
     {
         public void GroupMemberIncrease(object sender, CQGroupMemberIncreaseEventArgs e)
         {
+            LuaEnv.Tools.Manager.GroupManager.Update();
             if (e.SubType == Sdk.Cqp.Enum.CQGroupMemberIncreaseType.Invite)
             {
                 LuaEnv.LuaStates.Run(e.FromGroup.Id, "GroupMemberInvite", new

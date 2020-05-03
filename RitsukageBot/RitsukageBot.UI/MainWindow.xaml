@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RitsukageBot.UI"
         mc:Ignorable="d"
-        Title="Lua插件设置" Height="360" Width="400"
+        Title="Lua插件设置" Height="520" Width="400"
         WindowStartupLocation="CenterScreen"
         Loaded="Window_Loaded">
     <ScrollViewer>
@@ -40,6 +40,13 @@
 			<CheckBox Content="开启SJFSocket功能" IsChecked="{Binding SJFSocketEnable}"/>
 			<TextBlock Text="SJFSocket连接地址："/>
 			<TextBox Text="{Binding SJFSocketConnect,UpdateSourceTrigger=PropertyChanged}"/>
+			<CheckBox Content="开启HTTP请求监听功能" IsChecked="{Binding HttpListenEnable}"/>
+			<TextBlock Text="HTTP请求监听域名："/>
+			<TextBox Text="{Binding HttpListenHost,UpdateSourceTrigger=PropertyChanged}"/>
+			<TextBlock Text="HTTP请求监听子级："/>
+			<TextBox Text="{Binding HttpListenSub,UpdateSourceTrigger=PropertyChanged}"/>
+			<TextBlock Text="HTTP请求监听端口："/>
+			<TextBox Text="{Binding HttpListenPort,UpdateSourceTrigger=PropertyChanged}"/>
 		</StackPanel>
     </ScrollViewer>
 </Window>

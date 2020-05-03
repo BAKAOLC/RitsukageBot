@@ -123,6 +123,7 @@
     <Compile Include="Cqp\Model\GroupMemberInfo.cs" />
     <Compile Include="Cqp\Model\QQMessage.cs" />
     <Compile Include="Cqp\Model\QQ.cs" />
+    <Compile Include="Cqp\Model\ReceivedMessage.cs" />
     <Compile Include="Cqp\Model\StrangerInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

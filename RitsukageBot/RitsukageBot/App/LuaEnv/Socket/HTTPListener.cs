@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Native.Csharp.App.LuaEnv.Socket
@@ -52,6 +53,8 @@ namespace Native.Csharp.App.LuaEnv.Socket
             _listener = null;
         }
 
+        private static readonly Regex paramKVMatch = new Regex(@"(?<=\?).+");
+
         private static void Result(IAsyncResult ar)
         {
             _listener.BeginGetContext(Result, null);
@@ -66,8 +69,15 @@ namespace Native.Csharp.App.LuaEnv.Socket
             switch (request.HttpMethod)
             {
                 case "GET":
-                    NameValueCollection query = request.QueryString;
-                    Common.AppData.CQLog.InfoReceive("Http Listener", $"Receive a new http get request from {request.UserHostAddress}");
+                    NameValueCollection query = new NameValueCollection();
+                    string p = paramKVMatch.Match(request.RawUrl).Value;
+                    string[] param = p.Split('&');
+                    for (int i = 0; i < param.Length; i++)
+                    {
+                        string[] kv = param[i].Split('=');
+                        query.Add(System.Web.HttpUtility.UrlDecode(kv[0], Encoding.UTF8),
+                            System.Web.HttpUtility.UrlDecode(kv[1], Encoding.UTF8));
+                    }
                     LuaEnv.LuaStates.Run("http", "HttpGet", new
                     {
                         request,
@@ -79,7 +89,6 @@ namespace Native.Csharp.App.LuaEnv.Socket
                     Stream stream = context.Request.InputStream;
                     StreamReader reader = new StreamReader(stream, Encoding.UTF8);
                     string data = reader.ReadToEnd();
-                    Common.AppData.CQLog.InfoReceive("Http Listener", $"Receive a new http post request from {request.UserHostAddress}");
                     LuaEnv.LuaStates.Run("http", "HttpPost", new
                     {
                         request,

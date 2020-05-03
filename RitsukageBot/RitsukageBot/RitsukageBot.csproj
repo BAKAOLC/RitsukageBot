@@ -278,7 +278,10 @@
     <Compile Include="App\LuaEnv\Bilibili\BiliLive.cs" />
     <Compile Include="App\LuaEnv\Tools\ByteDataBuilder.cs" />
     <Compile Include="App\LuaEnv\LuaStates.cs" />
+    <Compile Include="App\LuaEnv\Tools\EncodingConvert.cs" />
     <Compile Include="App\LuaEnv\Tools\Image.cs" />
+    <Compile Include="App\LuaEnv\Tools\Manager\GroupInfo.cs" />
+    <Compile Include="App\LuaEnv\Tools\Manager\GroupList.cs" />
     <Compile Include="App\LuaEnv\Tools\MySQLData.cs" />
     <Compile Include="App\LuaEnv\Tools\QRCode.cs" />
     <Compile Include="App\LuaEnv\Tools\Rand.cs" />
@@ -287,6 +290,7 @@
     <Compile Include="App\LuaEnv\Socket\SJFOpCode.cs" />
     <Compile Include="App\LuaEnv\Socket\TcpServer.cs" />
     <Compile Include="App\LuaEnv\TimerRun.cs" />
+    <Compile Include="App\LuaEnv\Tools\Manager\GroupManager.cs" />
     <Compile Include="App\LuaEnv\Utils.cs" />
     <Compile Include="App\LuaEnv\Socket\WebSocket_Client.cs" />
     <Compile Include="App\LuaEnv\Socket\WebSocket_Server.cs" />
