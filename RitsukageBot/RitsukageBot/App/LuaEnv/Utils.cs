@@ -7,18 +7,14 @@ using Newtonsoft.Json;
 using RitsukageBot.UI;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Security;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Native.Csharp.App.LuaEnv
 {
@@ -74,7 +70,7 @@ namespace Native.Csharp.App.LuaEnv
             //ui界面数据绑定
             Global.Settings = setting;
             //git按键回调函数
-            RitsukageBot.UI.Global.GitInitial += (s, e) =>
+            Global.GitInitial += (s, e) =>
             {
                 string gitPath = Common.AppData.CQApi.AppDirectory + "lua/";
                 if (Directory.Exists(gitPath))
@@ -89,14 +85,16 @@ namespace Native.Csharp.App.LuaEnv
                         try
                         {
                             Common.AppData.CQLog.Info("Lua插件更新脚本", "正在更新脚本，请稍后");
-                            var options = new LibGit2Sharp.PullOptions();
-                            options.FetchOptions = new FetchOptions();
-                            var signature = new LibGit2Sharp.Signature(
+                            var options = new PullOptions
+                            {
+                                FetchOptions = new FetchOptions()
+                            };
+                            var signature = new Signature(
                                 new Identity("MERGE_USER_NAME", "MERGE_USER_EMAIL"), DateTimeOffset.Now);
                             using var repo = new Repository(gitPath);
                             Commands.Pull(repo, signature, options);
                             LuaStates.Clear();
-                            LuaEnv.LuaStates.Run("main", "AppEnable", new { });
+                            LuaStates.Run("main", "AppEnable", new { });
                             Common.AppData.CQLog.Info("Lua插件初始化脚本", "更新完成！您可以开始用了");
                             return;
                         }
@@ -112,7 +110,7 @@ namespace Native.Csharp.App.LuaEnv
                 {
                     Repository.Clone("https://gitee.com/chenxuuu/receiver-meow-lua.git", gitPath);
                     LuaStates.Clear();
-                    LuaEnv.LuaStates.Run("main", "AppEnable", new { });
+                    LuaStates.Run("main", "AppEnable", new { });
                     Common.AppData.CQLog.Info("Lua插件初始化脚本", "初始化完成！您可以开始用了");
                 }
                 catch (Exception ee)
@@ -122,13 +120,13 @@ namespace Native.Csharp.App.LuaEnv
                 }
             };
             //重载虚拟机按键回调函数
-            RitsukageBot.UI.Global.LuaInitial += (s, e) =>
+            Global.LuaInitial += (s, e) =>
             {
                 LuaStates.Clear();
-                LuaEnv.LuaStates.Run("main", "AppEnable", new { });
+                LuaStates.Run("main", "AppEnable", new { });
             };
             //重载Xml按键回调函数
-            RitsukageBot.UI.Global.XmlInitial += (s, e) =>
+            Global.XmlInitial += (s, e) =>
             {
                 XmlApi.Clear();
             };
