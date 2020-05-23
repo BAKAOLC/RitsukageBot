@@ -270,6 +270,7 @@
     </Compile>
     <Compile Include="App\CQMain.cs" />
     <Compile Include="App\LuaEnv\Socket\HTTPListener.cs" />
+    <Compile Include="App\LuaEnv\Socket\MCSocket.cs" />
     <Compile Include="App\LuaEnv\Socket\Ritsukage\DayCheckInMonth.cs" />
     <Compile Include="App\LuaEnv\Socket\Ritsukage\RUOpCode.cs" />
     <Compile Include="App\LuaEnv\Socket\Ritsukage\RUPack.cs" />
