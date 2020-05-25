@@ -96,7 +96,6 @@ namespace Native.Csharp.App
     {
         public void GroupAddRequest(object sender, CQGroupAddRequestEventArgs e)
         {
-            LuaEnv.Tools.Manager.GroupManager.Update();
             if (e.SubType == Sdk.Cqp.Enum.CQGroupAddRequestType.ApplyAddGroup)
             {
                 LuaEnv.LuaStates.Run("main", "GroupAddRequest", new

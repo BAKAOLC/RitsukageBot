@@ -86,9 +86,6 @@
     <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="LuaTask, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\LuaTask.1.0.5\lib\net45\LuaTask.dll</HintPath>
-    </Reference>
     <Reference Include="MySql.Data, Version=8.0.19.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.8.0.19\lib\net452\MySql.Data.dll</HintPath>
     </Reference>
@@ -269,6 +266,7 @@
       <DependentUpon>CQExport.tt</DependentUpon>
     </Compile>
     <Compile Include="App\CQMain.cs" />
+    <Compile Include="App\LuaEnv\LuaState.cs" />
     <Compile Include="App\LuaEnv\Socket\HTTPListener.cs" />
     <Compile Include="App\LuaEnv\Socket\MCSocket.cs" />
     <Compile Include="App\LuaEnv\Socket\Ritsukage\DayCheckInMonth.cs" />

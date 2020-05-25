@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.IO;
+using System.Threading;
 
 namespace Native.Csharp.App.LuaEnv.Socket
 {
@@ -44,6 +45,11 @@ namespace Native.Csharp.App.LuaEnv.Socket
             {
                 try
                 {
+                    DataReceiveThread = new Thread(DataReceiveLoop)
+                    {
+                        IsBackground = true
+                    };
+                    DataReceiveThread.Start();
                     Ping();
                 }
                 catch (Exception e)
@@ -82,7 +88,7 @@ namespace Native.Csharp.App.LuaEnv.Socket
         {
             using var ms = new MemoryStream();
             ms.WriteByte(0x00);
-            ms.WriteVarInt(4);
+            ms.WriteVarInt(578);
             ms.WriteString(Host);
             ms.WriteAsync(BitConverter.GetBytes(Port).ToBE(), 0, 2);
             ms.WriteVarInt(1);
@@ -90,39 +96,11 @@ namespace Native.Csharp.App.LuaEnv.Socket
             return true;
         }
 
-        public bool Ping()
+        private bool Ping()
         {
             NetStream.WriteByte(0x01);
             NetStream.WriteByte(0x00);
             NetStream.FlushAsync();
-            NetStream.ReadVarInt();
-            int id = NetStream.ReadVarInt();
-            if (id == -1)
-                throw new IOException("Premature end of stream.");
-            else if (id != 0x00)
-                throw new IOException("Invalid packetID");
-            int length = NetStream.ReadVarInt();
-            if (length == -1)
-                throw new IOException("Premature end of stream.");
-            else if (length == 0)
-                throw new IOException("Invalid string length.");
-            byte[] js = new byte[length];
-            NetStream.ReadAsync(js, 0, length);
-            Info = Encoding.UTF8.GetString(js);
-            var now = BitConverter.GetBytes(GetTimeStamp()).ToBE();
-            NetStream.WriteByte(0x09);
-            NetStream.WriteByte(0x01);
-            NetStream.WriteAsync(now, 0, now.Length);
-            NetStream.FlushAsync();
-            NetStream.ReadVarInt();
-            id = NetStream.ReadVarInt();
-            if (id == -1)
-                throw new IOException("Premature end of stream.");
-            else if (id != 0x01)
-                throw new IOException("Invalid packetID");
-            var tbf = new byte[8];
-            NetStream.ReadAsync(tbf, 0, 8);
-            PingTimeStamp = BitConverter.ToInt64(tbf.Reverse().ToArray(), 0);
             return true;
         }
 
@@ -131,6 +109,55 @@ namespace Native.Csharp.App.LuaEnv.Socket
             NetStream.WriteVarInt(buffer.Length);
             NetStream.WriteAsync(buffer, 0, buffer.Length);
             NetStream.FlushAsync();
+        }
+
+        private Thread DataReceiveThread;
+        private void DataReceiveLoop()
+        {
+            try
+            {
+                while (Connected)
+                {
+                    var size = NetStream.ReadVarInt();
+                    var id = NetStream.ReadVarInt(out int bytes);
+                    switch (id)
+                    {
+                        case -1:
+                            throw new IOException("Premature end of stream.");
+                        case 0x00:
+                            int length = NetStream.ReadVarInt();
+                            if (length == -1)
+                                throw new IOException("Premature end of stream.");
+                            else if (length == 0)
+                                throw new IOException("Invalid string length.");
+                            byte[] js = new byte[length];
+                            NetStream.ReadAsync(js, 0, length);
+                            Info = Encoding.UTF8.GetString(js);
+                            var now = BitConverter.GetBytes(GetTimeStamp()).ToBE();
+                            NetStream.WriteByte(0x09);
+                            NetStream.WriteByte(0x01);
+                            NetStream.WriteAsync(now, 0, now.Length);
+                            NetStream.FlushAsync();
+                            break;
+                        case 0x01:
+                            var tbf = new byte[8];
+                            NetStream.ReadAsync(tbf, 0, 8);
+                            PingTimeStamp = BitConverter.ToInt64(tbf.Reverse().ToArray(), 0);
+                            break;
+                        default:
+                            size -= bytes;
+                            var data = new byte[size];
+                            NetStream.ReadAsync(data, 0, size);
+                            break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Info = e.Message;
+                PingTimeStamp = 0;
+                Disconnect();
+            }
         }
 
         public static long GetTimeStamp()
@@ -178,6 +205,24 @@ namespace Native.Csharp.App.LuaEnv.Socket
             return result;
         }
 
+        public static int ReadVarInt(this Stream stream, out int bytes)
+        {
+            int numRead = 0;
+            int result = 0;
+            byte read;
+            do
+            {
+                read = (byte)stream.ReadByte();
+                int value = (read & 0b01111111);
+                result |= value << (7 * numRead);
+                numRead++;
+                if (numRead > 5)
+                    throw new Exception("VarInt is too big");
+            } while ((read & 0b10000000) != 0);
+            bytes = numRead;
+            return result;
+        }
+
         public static long ReadVarLong(this Stream stream)
         {
             int numRead = 0;
@@ -192,6 +237,24 @@ namespace Native.Csharp.App.LuaEnv.Socket
                 if (numRead > 10)
                     throw new Exception("VarInt is too big");
             } while ((read & 0b10000000) != 0);
+            return result;
+        }
+
+        public static long ReadVarLong(this Stream stream, out int bytes)
+        {
+            int numRead = 0;
+            long result = 0;
+            byte read;
+            do
+            {
+                read = (byte)stream.ReadByte();
+                int value = (read & 0b01111111);
+                result |= value << (7 * numRead);
+                numRead++;
+                if (numRead > 10)
+                    throw new Exception("VarInt is too big");
+            } while ((read & 0b10000000) != 0);
+            bytes = numRead;
             return result;
         }
 

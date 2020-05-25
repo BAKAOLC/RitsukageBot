@@ -11,8 +11,8 @@ namespace Native.Csharp.App.LuaEnv
     class LuaStates
     {
         //虚拟机池子
-        private static ConcurrentDictionary<string, LuaTask.LuaEnv> states =
-            new ConcurrentDictionary<string, LuaTask.LuaEnv>();
+        private static ConcurrentDictionary<string, LuaState> states =
+            new ConcurrentDictionary<string, LuaState>();
         //池子操作锁
         private static object stateLock = new object();
 
@@ -46,13 +46,13 @@ namespace Native.Csharp.App.LuaEnv
             {
                 if (!states.ContainsKey(name))//没有的话就初始化池子
                 {
-                    states[name] = new LuaTask.LuaEnv();
+                    states[name] = new LuaState();
                     try
                     {
                         states[name].lua.LoadCLRPackage();
                         states[name].lua["LuaEnvName"] = name;
                         states[name].DoFile(Common.AppData.CQApi.AppDirectory + "lua/main.lua");
-                        states[name].ErrorEvent += (e, text) =>
+                        states[name].ErrorHandler += (e, text) =>
                         {
                             Common.AppData.CQLog.Error(
                                 "Lua插件报错",
@@ -72,7 +72,7 @@ namespace Native.Csharp.App.LuaEnv
                     }
                 }
                 //Common.AppData.CQLog.Debug("lua插件", $"触发事件{type}");
-                states[name].addTigger(type, data);//运行
+                states[name].TriggerEvent(type, data);
             }
         }
         public static void Run(long name, string type, object data)
@@ -88,9 +88,8 @@ namespace Native.Csharp.App.LuaEnv
                 foreach(string k in states.Keys)
                 {
                     Common.AppData.CQLog.Info("Lua插件", "已释放虚拟机" + k);
-                    LuaTask.LuaEnv l; 
-                    states.TryRemove(k, out l);//取出
-                    l.Dispose();//释放
+                    states.TryRemove(k, out LuaState l);
+                    l.Dispose();
                 }
                 Common.AppData.CQLog.Info("Lua插件", "所有虚拟机均已释放");
             }
