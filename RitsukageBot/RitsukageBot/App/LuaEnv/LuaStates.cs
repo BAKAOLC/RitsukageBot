@@ -26,7 +26,7 @@ namespace Native.Csharp.App.LuaEnv
         public static void Run(string name, string type, object data)
         {
             //检查文件是否存在
-            if(!File.Exists(Common.AppData.CQApi.AppDirectory + "lua/main.lua"))
+            if (!File.Exists(Common.AppData.CQApi.AppDirectory + "lua/main.lua"))
             {
                 Common.AppData.CQLog.Error(
                     "Lua插件报错",
@@ -52,15 +52,15 @@ namespace Native.Csharp.App.LuaEnv
                         states[name].lua.LoadCLRPackage();
                         states[name].lua["LuaEnvName"] = name;
                         states[name].DoFile(Common.AppData.CQApi.AppDirectory + "lua/main.lua");
-                        states[name].ErrorHandler += (e, text) =>
+                        states[name].ErrorHandler += (e, err) =>
                         {
                             Common.AppData.CQLog.Error(
                                 "Lua插件报错",
-                                $"虚拟机运行时错误。名称：{name},错误信息：{text}"
+                                $"虚拟机运行时错误。名称：{name},错误信息：{err.Message}"
                             );
                         };
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         states[name].Dispose();
                         states.TryRemove(name, out _);
@@ -85,7 +85,7 @@ namespace Native.Csharp.App.LuaEnv
         {
             lock (stateLock)
             {
-                foreach(string k in states.Keys)
+                foreach (string k in states.Keys)
                 {
                     Common.AppData.CQLog.Info("Lua插件", "已释放虚拟机" + k);
                     states.TryRemove(k, out LuaState l);

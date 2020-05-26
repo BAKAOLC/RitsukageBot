@@ -141,19 +141,20 @@ namespace Native.Csharp.App.LuaEnv
                 Type t = asm.GetType(className);
                 new Thread(() =>
                 {
-                try
-                {
-                    string method = type.Substring(type.LastIndexOf(".") + 1,
-                        type.Length - type.LastIndexOf(".") - 1);
-                    List<Type> ft = new List<Type>();
-                    for (int i = 0; i < data.Length; i++)
-                        ft.Add(data[i].GetType());
-                    object r = t.GetMethod(method, ft.ToArray()).Invoke(null, data);
-                    TriggerEvent("AsyncRun", new LuaStateAsyncRunResultData() {
-                        Id = id,
-                        Success = true,
-                        Result = r
-                    });
+                    try
+                    {
+                        string method = type.Substring(type.LastIndexOf(".") + 1,
+                            type.Length - type.LastIndexOf(".") - 1);
+                        List<Type> ft = new List<Type>();
+                        for (int i = 0; i < data.Length; i++)
+                            ft.Add(data[i].GetType());
+                        object r = t.GetMethod(method, ft.ToArray()).Invoke(null, data);
+                        TriggerEvent("AsyncRun", new LuaStateAsyncRunResultData()
+                        {
+                            Id = id,
+                            Success = true,
+                            Result = r
+                        });
                     }
                     catch (Exception e)
                     {
@@ -188,7 +189,7 @@ namespace Native.Csharp.App.LuaEnv
             if (!m_disposed)
             {
                 if (disposing)
-                {}
+                { }
                 lua?.Dispose();
                 m_disposed = true;
             }

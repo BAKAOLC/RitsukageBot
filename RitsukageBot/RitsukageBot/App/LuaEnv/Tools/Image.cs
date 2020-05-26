@@ -47,35 +47,42 @@ namespace Native.Csharp.App.LuaEnv.Tools
             return Convert.ToBase64String(arr);
         }
 
-        public BaseImage DrawText(int x, int y, string text, string type = "黑体", int size = 9, int r = 0, int g = 0, int b = 0)
+        public BaseImage DrawText(float x, float y, string text, string type = "黑体", float size = 9, int r = 0, int g = 0, int b = 0, float angle = 0)
         {
             using Graphics pic = GetGraphics();
             using Font font = new Font(type, size);
             Color myColor = Color.FromArgb(r, g, b);
+            PointF pos = new PointF(x, y);
+            if (angle != 0)
+            {
+                Matrix matrix = pic.Transform;
+                matrix.RotateAt(angle, pos);
+                pic.Transform = matrix;
+            }
             using SolidBrush myBrush = new SolidBrush(myColor);
-            pic.DrawString(text, font, myBrush, new PointF(x, y));
+            pic.DrawString(text, font, myBrush, pos);
             return this;
         }
 
-        public BaseImage DrawRectangle(int x, int y, int width, int height, int r = 0, int g = 0, int b = 0)
+        public BaseImage DrawRectangle(float x, float y, float width, float height, int r = 0, int g = 0, int b = 0)
         {
             using Graphics pic = GetGraphics();
             Color myColor = Color.FromArgb(r, g, b);
             using SolidBrush myBrush = new SolidBrush(myColor);
-            pic.FillRectangle(myBrush, new Rectangle(x, y, width, height));
+            pic.FillRectangle(myBrush, new RectangleF(x, y, width, height));
             return this;
         }
 
-        public BaseImage DrawEllipse(int x, int y, int width, int height, int r = 0, int g = 0, int b = 0)
+        public BaseImage DrawEllipse(float x, float y, int width, int height, int r = 0, int g = 0, int b = 0)
         {
             using Graphics pic = GetGraphics();
             Color myColor = Color.FromArgb(r, g, b);
             using Pen myBrush = new Pen(myColor);
-            pic.DrawEllipse(myBrush, new Rectangle(x, y, width, height));
+            pic.DrawEllipse(myBrush, new RectangleF(x, y, width, height));
             return this;
         }
 
-        public BaseImage DrawImage(string path, int x, int y, int width = 0, int height = 0)
+        public BaseImage DrawImage(string path, float x, float y, float width = 0, float height = 0)
         {
             if (!File.Exists(path))
                 return this;
@@ -208,7 +215,7 @@ namespace Native.Csharp.App.LuaEnv.Tools
             {
                 for (int y = 0; y < bmp.Height; y++)
                 {
-                    c = bmp.GetPixel(x, y);;
+                    c = bmp.GetPixel(x, y); ;
                     bmp.SetPixel(x, y, Color.FromArgb(c.A, 255 - c.R, 255 - c.G, 255 - c.B));
                 }
             }
@@ -293,7 +300,7 @@ namespace Native.Csharp.App.LuaEnv.Tools
 
         public Color TransparentColor = Color.Empty;
 
-        public GifManager() {}
+        public GifManager() { }
 
         public GifManager(string path)
         {
@@ -370,7 +377,8 @@ namespace Native.Csharp.App.LuaEnv.Tools
             this.B = B;
         }
 
-        public int A {
+        public int A
+        {
             get => a;
             set
             {
@@ -502,6 +510,23 @@ namespace Native.Csharp.App.LuaEnv.Tools
                 ".ico" => ImageFormat.Icon,
                 _ => null,
             };
+        }
+
+        public static SizeF MeasureString(string font, float size, string text) => new Font(font, size).MeasureString(text);
+
+        public static SizeF MeasureString(this Font font, string text)
+        {
+            using Bitmap img = new Bitmap(1, 1);
+            return Graphics.FromImage(img).MeasureString(text, font);
+        }
+
+        public static SizeF Rotate(this SizeF sizeF, float angle)
+        {
+            float width = (float)(sizeF.Width * Math.Cos(angle) + sizeF.Height * Math.Sin(angle));
+            float height = (float)(sizeF.Height * Math.Cos(angle) + sizeF.Width * Math.Sin(angle));
+            sizeF.Width = width;
+            sizeF.Height = height;
+            return sizeF;
         }
 
         public struct HSVColor
