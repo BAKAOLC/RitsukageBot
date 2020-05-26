@@ -24,6 +24,9 @@ namespace Native.Csharp.App.LuaEnv
 
         public event EventHandler<Exception> ErrorHandler;
 
+        public void Error(Exception e) => ErrorHandler?.Invoke(lua, e);
+        public void Error(string msg) => Error(new Exception(msg));
+
         private readonly object _lock = new object();
 
         private int asyncId = 0;
@@ -61,7 +64,7 @@ namespace Native.Csharp.App.LuaEnv
                     }
                     catch (Exception e)
                     {
-                        ErrorHandler?.Invoke(lua, e);
+                        Error(e);
                     }
                     if (m_disposed)
                         return;
@@ -111,7 +114,7 @@ namespace Native.Csharp.App.LuaEnv
             }
             catch (Exception e)
             {
-                ErrorHandler?.Invoke(lua, e);
+                Error(e);
                 throw e;
             }
         }
@@ -123,7 +126,7 @@ namespace Native.Csharp.App.LuaEnv
             }
             catch (Exception e)
             {
-                ErrorHandler?.Invoke(lua, e);
+                Error(e);
                 throw e;
             }
         }
@@ -138,26 +141,35 @@ namespace Native.Csharp.App.LuaEnv
                 Type t = asm.GetType(className);
                 new Thread(() =>
                 {
-                    try
-                    {
-                        string method = type.Substring(type.LastIndexOf(".") + 1,
-                            type.Length - type.LastIndexOf(".") - 1);
-                        List<Type> ft = new List<Type>();
-                        for (int i = 0; i < data.Length; i++)
-                            ft.Add(data[i].GetType());
-                        object r = t.GetMethod(method, ft.ToArray()).Invoke(null, data);
-                        TriggerEvent("AsyncRun", new { Id = id, Success = true, Result = r });
+                try
+                {
+                    string method = type.Substring(type.LastIndexOf(".") + 1,
+                        type.Length - type.LastIndexOf(".") - 1);
+                    List<Type> ft = new List<Type>();
+                    for (int i = 0; i < data.Length; i++)
+                        ft.Add(data[i].GetType());
+                    object r = t.GetMethod(method, ft.ToArray()).Invoke(null, data);
+                    TriggerEvent("AsyncRun", new LuaStateAsyncRunResultData() {
+                        Id = id,
+                        Success = true,
+                        Result = r
+                    });
                     }
                     catch (Exception e)
                     {
-                        ErrorHandler?.Invoke(this, e);
-                        TriggerEvent("AsyncRun", new { Id = id, Success = false, Exception = e });
+                        Error(e);
+                        TriggerEvent("AsyncRun", new LuaStateAsyncRunResultData()
+                        {
+                            Id = id,
+                            Success = false,
+                            Exception = e
+                        });
                     }
                 }).Start();
             }
             catch (Exception e)
             {
-                ErrorHandler?.Invoke(this, e);
+                Error(e);
                 return -1;
             }
             return id;
@@ -217,11 +229,14 @@ end
 ---创建延时任务
 ---@param ms number
 ---@param timerFunction function
+---@return thread
 function StartTimer(ms, timerFunction, ...)
     return CreateTask({
         func = function(...)
             TaskSleep(ms)
-            timerFunction(...)
+            xpcall(timerFunction, function(e)
+                this:Error(e)
+            end, ...)
         end
     }, ...)
 end
@@ -229,12 +244,15 @@ end
 ---创建循环延时任务
 ---@param ms number
 ---@param timerFunction function
+---@return thread
 function StartLoopTimer(ms, timerFunction, ...)
     return CreateTask({
         func = function(...)
             while true do
                 TaskSleep(ms)
-                timerFunction(...)
+                xpcall(timerFunction, function(e)
+                    this:Error(e)
+                end, ...)
             end
         end
     }, ...)
@@ -317,7 +335,7 @@ function EventTrigger(event, data)
         end
     elseif event == ""AsyncRun"" then
         if AsyncRecord[data.Id] then
-            AsyncRecord[data.Id](data.Success, data.Success and data.Result or data.Exception)
+            AsyncRecord[data.Id](data.Success, data.Result)
             AsyncRecord[data.Id] = nil
         end
     elseif TriggerRecord[event] then
@@ -377,5 +395,13 @@ local TaskInitData = {
     {
         public string Type;
         public object Data;
+    }
+
+    public class LuaStateAsyncRunResultData
+    {
+        public int Id;
+        public bool Success;
+        public object Result;
+        public Exception Exception;
     }
 }
