@@ -207,6 +207,7 @@ local TimerIdRecord = {}
 local AsyncRecord = {}
 local WaitingRecord = {}
 local TriggerRecord = {}
+local ThreadStop = {}
 
 ---判断任务是否存活
 ---@param thread thread
@@ -261,11 +262,7 @@ end
 
 ---结束定时器任务
 function TimerStop(thread)
-    if TimerThreadRecord[thread] then
-        this:ShutdownTimerTrigger(TimerThreadRecord[thread])
-        TimerIdRecord[TimerThreadRecord[thread]] = nil
-        TimerIdRecord[thread] = nil
-    end
+    ThreadStop[thread] = true
 end
 
 ---结束所有定时器任务
@@ -332,7 +329,11 @@ function EventTrigger(event, data)
         if thread then
             TimerThreadRecord[thread] = nil
             TimerIdRecord[data.Id] = nil
-            coroutine.resume(thread)
+            if not (ThreadStop[thread]) then
+                coroutine.resume(thread)
+            else
+                ThreadStop[thread] = nil
+            end
         end
     elseif event == ""AsyncRun"" then
         if AsyncRecord[data.Id] then
@@ -385,7 +386,8 @@ local TaskInitData_HookData = {
 ---@field func function
 ---@field hook Task.InitData.HookData
 local TaskInitData = {
-    func = function() end,
+    func = function()
+    end,
     hook = TaskInitData_HookData,
 }
 ");
