@@ -52,11 +52,11 @@ namespace Native.Csharp.App.LuaEnv
                         states[name].lua.LoadCLRPackage();
                         states[name].lua["LuaEnvName"] = name;
                         states[name].DoFile(Common.AppData.CQApi.AppDirectory + "lua/main.lua");
-                        states[name].ErrorHandler += (e, err) =>
+                        states[name].ErrorHandler += (e, text) =>
                         {
                             Common.AppData.CQLog.Error(
                                 "Lua插件报错",
-                                $"虚拟机运行时错误。名称：{name},错误信息：{err.Message}"
+                                $"虚拟机运行时错误。名称：{name},错误信息：{text}"
                             );
                         };
                     }

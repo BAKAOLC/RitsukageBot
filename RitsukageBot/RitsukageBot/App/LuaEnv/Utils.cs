@@ -66,7 +66,7 @@ namespace Native.Csharp.App.LuaEnv
             if (initialFlag)
                 return;
             initialFlag = true;
-            Tools.Manager.GroupManager.Update();
+
             //ui界面数据绑定
             Global.Settings = setting;
             //git按键回调函数
