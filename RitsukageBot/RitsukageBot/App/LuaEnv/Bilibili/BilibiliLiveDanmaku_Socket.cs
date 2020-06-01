@@ -1,14 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using Tools.BitConverter;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using static Native.Csharp.App.LuaEnv.Bilibili.BilibiliLiveDanmaku_Events;
 
@@ -16,19 +15,20 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
 {
     class BilibiliLiveDanmaku_Socket
     {
-        private string[] DefaultHosts = new string[] { "livecmt-2.bilibili.com", "livecmt-1.bilibili.com" };
+        private readonly bool IsDebug = false;
+
+        private readonly string[] DefaultHosts = new string[] { "livecmt-2.bilibili.com", "livecmt-1.bilibili.com" };
         private string ChatHost = "chat.bilibili.com";
         private int ChatPort = 2243;
-        private string CIDInfoUrl = "https://api.live.bilibili.com/room/v1/Danmu/getConf?room_id=";
-        private short ProtocolVersion = 1;
+        private readonly string CIDInfoUrl = "https://api.live.bilibili.com/room/v1/Danmu/getConf?room_id=";
+        private readonly short ProtocolVersion = 1;
 
         public int RoomID;
 
         public bool IsConnected = false;
         private TcpClient Client;
         private NetworkStream NetStream;
-        private HttpClient _httpClient = new HttpClient() { Timeout = TimeSpan.FromSeconds(5) };
-        private Thread MessageReceiveThread;
+        private readonly HttpClient _httpClient = new HttpClient() { Timeout = TimeSpan.FromSeconds(5) };
 
         public event SocketConnected Connected;
         public event SocketReceivedDanmaku ReceivedDanmaku;
@@ -43,6 +43,7 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
 
         public async Task<bool> ConnectAsync()
         {
+            var token = "";
             try
             {
                 if (IsConnected)
@@ -51,6 +52,7 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
                 {
                     var req = await _httpClient.GetStringAsync(CIDInfoUrl + RoomID);
                     var roomobj = JObject.Parse(req);
+                    token = roomobj["data"]["token"] + "";
                     ChatHost = roomobj["data"]["host"] + "";
                     ChatPort = roomobj["data"]["port"].Value<int>();
                     if (string.IsNullOrEmpty(ChatHost))
@@ -94,15 +96,11 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
             Client = new TcpClient();
             await Client.ConnectAsync(ChatHost, ChatPort);
             NetStream = Client.GetStream();
-            if (SendJoinChannel())
+            if (await SendJoinChannel(RoomID, token))
             {
                 IsConnected = true;
-                HeartbeatLoop();
-                MessageReceiveThread = new Thread(ReceiveMessageLoop)
-                {
-                    IsBackground = true
-                };
-                MessageReceiveThread.Start();
+                _ = HeartbeatLoop();
+                _ = ReceiveMessageLoop();
                 Connected?.Invoke(this, new SocketConnectedArgs() {
                     RoomID = RoomID
                 });
@@ -111,13 +109,120 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
             return false;
         }
 
-        private async void HeartbeatLoop()
+        private async Task ReceiveMessageLoop()
+        {
+
+            try
+            {
+                var stableBuffer = new byte[16];
+                var buffer = new byte[4096];
+                while (IsConnected)
+                {
+                    await NetStream.ReadBAsync(stableBuffer, 0, 16);
+                    var protocol = DanmakuProtocol.FromBuffer(stableBuffer);
+                    if (protocol.PacketLength < 16)
+                    {
+                        throw new NotSupportedException("协议失败: (L:" + protocol.PacketLength + ")");
+                    }
+                    var payloadlength = protocol.PacketLength - 16;
+                    if (payloadlength == 0)
+                    {
+                        continue;
+                    }
+
+                    buffer = new byte[payloadlength];
+                    await NetStream.ReadBAsync(buffer, 0, payloadlength);
+                    if (protocol.Version == 2 && protocol.Action == 5)
+                    {
+                        using var ms = new MemoryStream(buffer, 2, payloadlength - 2);
+                        using var deflate = new DeflateStream(ms, CompressionMode.Decompress);
+                        var headerbuffer = new byte[16];
+                        try
+                        {
+                            while (true)
+                            {
+                                await deflate.ReadBAsync(headerbuffer, 0, 16);
+                                var protocol_in = DanmakuProtocol.FromBuffer(headerbuffer);
+                                payloadlength = protocol_in.PacketLength - 16;
+                                var danmakubuffer = new byte[payloadlength];
+                                await deflate.ReadBAsync(danmakubuffer, 0, payloadlength);
+                                ProcessDanmaku(protocol.Action, danmakubuffer);
+                            }
+                        }
+                        catch
+                        {
+                        }
+                    }
+                    else
+                    {
+                        ProcessDanmaku(protocol.Action, buffer);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Disconnect(ex);
+            }
+        }
+
+        private void ProcessDanmaku(int action, byte[] buffer)
+        {
+            switch (action)
+            {
+                case 3:
+                    {
+                        var viewer = EndianBitConverter.BigEndian.ToUInt32(buffer, 0);
+                        ReceivedUserCount?.Invoke(this, new SocketReceivedUserCountArgs()
+                        {
+                            RoomID = RoomID,
+                            UserCount = viewer
+                        });
+                        break;
+                    }
+                case 5:
+                    {
+
+                        var json = Encoding.UTF8.GetString(buffer, 0, buffer.Length);
+                        if (IsDebug)
+                        {
+                            LogMessage?.Invoke(this, new SocketLogMessageArgs
+                            {
+                                RoomID = RoomID,
+                                Message = json
+                            });
+                        }
+                        try
+                        {
+                            var dama = new BilibiliLiveDanmaku_SocketReceiveData(json, 2);
+                            ReceivedDanmaku?.Invoke(this, new SocketReceivedDanmakuArgs()
+                            {
+                                RoomID = RoomID,
+                                Danmaku = dama
+                            });
+                        }
+                        catch
+                        {
+                        }
+                        break;
+                    }
+                case 8:
+                    {
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                    }
+            }
+        }
+
+        private async Task HeartbeatLoop()
         {
             try
             {
                 while (IsConnected)
                 {
-                    SendHeartbeatAsync();
+                    await SendHeartbeatAsync();
                     await Task.Delay(30000);
                 }
             }
@@ -127,115 +232,19 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
             }
         }
 
-        private void SendHeartbeatAsync() => SendSocketData(2);
+        private async Task SendHeartbeatAsync() => await SendSocketDataAsync(2);
 
-        private bool SendJoinChannel()
+        private async Task<bool> SendJoinChannel(int channelId, string token)
         {
-            Random r = new Random();
-            var tmpuid = (long)(1e14 + 2e14 * r.NextDouble());
-            var packetModel = new { roomid = RoomID, uid = tmpuid };
+            var packetModel = new { roomid = channelId, uid = 0, protover = 2, token, platform = "danmuji" };
             var playload = JsonConvert.SerializeObject(packetModel);
-            SendSocketData(7, playload);
+            await SendSocketDataAsync(7, playload);
             return true;
         }
 
-        private void ReceiveMessageLoop()
-        {
-            try
-            {
-                var stableBuffer = new byte[Client.ReceiveBufferSize];
-
-                while (IsConnected)
-                {
-                    NetStream.ReadB(stableBuffer, 0, 4);
-                    var packetlength = BitConverter.ToInt32(stableBuffer, 0);
-                    packetlength = IPAddress.NetworkToHostOrder(packetlength);
-                    if (packetlength < 16)
-                    {
-                        throw new NotSupportedException("协议失败: (L:" + packetlength + ")");
-                    }
-                    NetStream.ReadB(stableBuffer, 0, 2);
-                    NetStream.ReadB(stableBuffer, 0, 2);
-                    NetStream.ReadB(stableBuffer, 0, 4);
-                    var typeId = BitConverter.ToInt32(stableBuffer, 0);
-                    typeId = IPAddress.NetworkToHostOrder(typeId);
-                    Console.WriteLine(typeId);
-                    NetStream.ReadB(stableBuffer, 0, 4);
-                    var playloadlength = packetlength - 16;
-                    if (playloadlength == 0)
-                    {
-                        continue;
-                    }
-                    typeId = typeId - 1;
-                    var buffer = new byte[playloadlength];
-                    NetStream.ReadB(buffer, 0, playloadlength);
-                    switch (typeId)
-                    {
-                        case 0:
-                        case 1:
-                        case 2:
-                            {
-                                var viewer = BitConverter.ToUInt32(buffer.Take(4).Reverse().ToArray(), 0);
-                                ReceivedUserCount?.Invoke(this, new SocketReceivedUserCountArgs()
-                                {
-                                    RoomID = RoomID,
-                                    UserCount = viewer
-                                });
-                                break;
-                            }
-                        case 3:
-                        case 4:
-                            {
-                                var json = Encoding.UTF8.GetString(buffer, 0, playloadlength);
-                                try
-                                {
-                                    BilibiliLiveDanmaku_SocketReceiveData dama = new BilibiliLiveDanmaku_SocketReceiveData(json, 2);
-                                    ReceivedDanmaku?.Invoke(this, new SocketReceivedDanmakuArgs()
-                                    {
-                                        RoomID = RoomID,
-                                        Danmaku = dama
-                                    });
-                                }
-                                catch (Exception)
-                                {
-                                }
-                                break;
-                            }
-                        case 5:
-                            {
-                                break;
-                            }
-                        case 7:
-                            {
-                                break;
-                            }
-                        case 16:
-                            {
-                                break;
-                            }
-                        default:
-                            {
-                                break;
-                            }
-                    }
-                }
-            }
-            catch (NotSupportedException ex)
-            {
-                Disconnect(ex);
-            }
-            catch (Exception ex)
-            {
-                Disconnect(ex);
-            }
-        }
-
-        void SendSocketData(int action, string body = "")
-        {
-            SendSocketData(0, 16, ProtocolVersion, action, 1, body);
-        }
-
-        void SendSocketData(int packetlength, short magic, short ver, int action, int param = 1, string body = "")
+        Task SendSocketDataAsync(int action, string body = "")
+             => SendSocketDataAsync(0, 16, ProtocolVersion, action, 1, body);
+        async Task SendSocketDataAsync(int packetlength, short magic, short ver, int action, int param = 1, string body = "")
         {
             var playload = Encoding.UTF8.GetBytes(body);
             if (packetlength == 0)
@@ -243,25 +252,22 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
                 packetlength = playload.Length + 16;
             }
             var buffer = new byte[packetlength];
-            using (var ms = new MemoryStream(buffer))
+            using var ms = new MemoryStream(buffer);
+            var b = EndianBitConverter.BigEndian.GetBytes(buffer.Length);
+            await ms.WriteAsync(b, 0, 4);
+            b = EndianBitConverter.BigEndian.GetBytes(magic);
+            await ms.WriteAsync(b, 0, 2);
+            b = EndianBitConverter.BigEndian.GetBytes(ver);
+            await ms.WriteAsync(b, 0, 2);
+            b = EndianBitConverter.BigEndian.GetBytes(action);
+            await ms.WriteAsync(b, 0, 4);
+            b = EndianBitConverter.BigEndian.GetBytes(param);
+            await ms.WriteAsync(b, 0, 4);
+            if (playload.Length > 0)
             {
-                var b = BitConverter.GetBytes(buffer.Length).ToBE();
-                ms.Write(b, 0, 4);
-                b = BitConverter.GetBytes(magic).ToBE();
-                ms.Write(b, 0, 2);
-                b = BitConverter.GetBytes(ver).ToBE();
-                ms.Write(b, 0, 2);
-                b = BitConverter.GetBytes(action).ToBE();
-                ms.Write(b, 0, 4);
-                b = BitConverter.GetBytes(param).ToBE();
-                ms.Write(b, 0, 4);
-                if (playload.Length > 0)
-                {
-                    ms.Write(playload, 0, playload.Length);
-                }
-                NetStream.WriteAsync(buffer, 0, buffer.Length);
-                NetStream.FlushAsync();
+                await ms.WriteAsync(playload, 0, playload.Length);
             }
+            await NetStream.WriteAsync(buffer, 0, buffer.Length);
         }
 
         public void Disconnect(Exception Error = null)
@@ -271,16 +277,9 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
             IsConnected = false;
             try
             {
-                MessageReceiveThread?.Abort();
-            }
-            catch (Exception)
-            {
-            }
-            try
-            {
                 Client?.Close();
             }
-            catch (Exception)
+            catch
             {
             }
             try
@@ -288,10 +287,9 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
                 NetStream?.Close();
                 NetStream?.Dispose();
             }
-            catch (Exception)
+            catch
             {
             }
-            MessageReceiveThread = null;
             Client = null;
             NetStream = null;
             Disconnected?.Invoke(this, new SocketDisconnectedArgs()
@@ -305,33 +303,56 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
 
     public static class BitUtils
     {
-        public static byte[] ToBE(this byte[] b)
-        {
-            if (BitConverter.IsLittleEndian)
-            {
-                return b.Reverse().ToArray();
-            }
-            else
-            {
-                return b;
-            }
-        }
-
-        public static void ReadB(this NetworkStream stream, byte[] buffer, int offset, int count)
+        public static async Task ReadBAsync(this Stream stream, byte[] buffer, int offset, int count)
         {
             if (offset + count > buffer.Length)
                 throw new ArgumentException();
             int read = 0;
             while (read < count)
             {
-                var available = stream.Read(buffer, offset, count - read);
+                var available = await stream.ReadAsync(buffer, offset, count - read);
                 if (available == 0)
-                {
                     throw new ObjectDisposedException(null);
-                }
                 read += available;
                 offset += available;
             }
+        }
+    }
+
+    public struct DanmakuProtocol
+    {
+        /// <summary>
+        /// 消息总长度 (协议头 + 数据长度)
+        /// </summary>
+        public int PacketLength;
+        /// <summary>
+        /// 消息头长度 (固定为16[sizeof(DanmakuProtocol)])
+        /// </summary>
+        public short HeaderLength;
+        /// <summary>
+        /// 消息版本号
+        /// </summary>
+        public short Version;
+        /// <summary>
+        /// 消息类型
+        /// </summary>
+        public int Action;
+        /// <summary>
+        /// 参数, 固定为1
+        /// </summary>
+        public int Parameter;
+
+        public static DanmakuProtocol FromBuffer(byte[] buffer)
+        {
+            if (buffer.Length < 16) { throw new ArgumentException(); }
+            return new DanmakuProtocol()
+            {
+                PacketLength = EndianBitConverter.BigEndian.ToInt32(buffer, 0),
+                HeaderLength = EndianBitConverter.BigEndian.ToInt16(buffer, 4),
+                Version = EndianBitConverter.BigEndian.ToInt16(buffer, 6),
+                Action = EndianBitConverter.BigEndian.ToInt32(buffer, 8),
+                Parameter = EndianBitConverter.BigEndian.ToInt32(buffer, 12),
+            };
         }
     }
 }

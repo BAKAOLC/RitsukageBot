@@ -53,6 +53,11 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
         /// 购买船票
         /// </summary>
         GuardBuy,
+
+        /// <summary>
+        /// SC
+        /// </summary>
+        SuperChat,
     }
 
     class BilibiliLiveDanmaku_SocketReceiveData
@@ -119,6 +124,22 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
         /// <para>此字段也用于标识上船 <see cref="BilibiliLiveDanmaku_SocketReceiveDataType.GuardBuy"/> 的数量（月数）</para>
         /// </summary>
         public int GiftCount { get; set; }
+
+        /// <summary>
+        /// SC价格
+        /// <para>此项有值的消息类型：<list type="bullet">
+        /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.SuperChat"/></item>
+        /// </list></para>
+        /// </summary>
+        public decimal Price { get; set; }
+
+        /// <summary>
+        /// SC持续时间
+        /// <para>此项有值的消息类型：<list type="bullet">
+        /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.SuperChat"/></item>
+        /// </list></para>
+        /// </summary>
+        public int SCKeepTime { get; set; }
 
         /// <summary>
         /// 礼物排行
@@ -201,11 +222,11 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
                         {
                             case "LIVE":
                                 Type = BilibiliLiveDanmaku_SocketReceiveDataType.LiveStart;
-                                RoomID = obj["roomid"].ToString();
+                                RoomID = obj["RoomID"].ToString();
                                 break;
                             case "PREPARING":
                                 Type = BilibiliLiveDanmaku_SocketReceiveDataType.LiveEnd;
-                                RoomID = obj["roomid"].ToString();
+                                RoomID = obj["RoomID"].ToString();
                                 break;
                             case "DANMU_MSG":
                                 Type = BilibiliLiveDanmaku_SocketReceiveDataType.Comment;
@@ -221,6 +242,7 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
                                 GiftName = obj["data"]["giftName"].ToString();
                                 UserName = obj["data"]["uname"].ToString();
                                 UserID = obj["data"]["uid"].ToObject<int>();
+                                // Giftrcost = obj["data"]["rcost"].ToString();
                                 GiftCount = obj["data"]["num"].ToObject<int>();
                                 break;
                             case "GIFT_TOP":
@@ -235,8 +257,10 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
                                             UID = v.Value<int>("uid"),
                                             UserName = v.Value<string>("uname"),
                                             Coin = v.Value<decimal>("coin")
+
                                         });
                                     }
+
                                     break;
                                 }
                             case "WELCOME":
@@ -245,8 +269,9 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
                                     UserName = obj["data"]["uname"].ToString();
                                     UserID = obj["data"]["uid"].ToObject<int>();
                                     IsVIP = true;
-                                    IsAdmin = obj["data"]["isadmin"].ToString() == "1";
+                                    IsAdmin = obj["data"]["isadmin"]?.ToString() == "1";
                                     break;
+
                                 }
                             case "WELCOME_GUARD":
                                 {
@@ -262,13 +287,41 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
                                     UserID = obj["data"]["uid"].ToObject<int>();
                                     UserName = obj["data"]["username"].ToString();
                                     UserGuardLevel = obj["data"]["guard_level"].ToObject<int>();
-                                    GiftName = UserGuardLevel == 3 ? "舰长" : UserGuardLevel == 2 ? "提督" : UserGuardLevel == 1 ? "总督" : "";
+                                    GiftName = UserGuardLevel == 3 ? "舰长" :
+                                        UserGuardLevel == 2 ? "提督" :
+                                        UserGuardLevel == 1 ? "总督" : "";
                                     GiftCount = obj["data"]["num"].ToObject<int>();
                                     break;
                                 }
+                            case "SUPER_CHAT_MESSAGE":
+                                {
+                                    Type = BilibiliLiveDanmaku_SocketReceiveDataType.SuperChat;
+                                    CommentText = obj["data"]["message"]?.ToString();
+                                    UserID = obj["data"]["uid"].ToObject<int>();
+                                    UserName = obj["data"]["user_info"]["uname"].ToString();
+                                    Price = obj["data"]["price"].ToObject<decimal>();
+                                    SCKeepTime = obj["data"]["time"].ToObject<int>();
+                                    break;
+                                }
+
                             default:
                                 {
-                                    Type = BilibiliLiveDanmaku_SocketReceiveDataType.Unknown;
+                                    if (cmd.StartsWith("DANMU_MSG")) // "高考"fix
+                                    {
+                                        Type = BilibiliLiveDanmaku_SocketReceiveDataType.Comment;
+                                        CommentText = obj["info"][1].ToString();
+                                        UserID = obj["info"][2][0].ToObject<int>();
+                                        UserName = obj["info"][2][1].ToString();
+                                        IsAdmin = obj["info"][2][2].ToString() == "1";
+                                        IsVIP = obj["info"][2][3].ToString() == "1";
+                                        UserGuardLevel = obj["info"][7].ToObject<int>();
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        Type = BilibiliLiveDanmaku_SocketReceiveDataType.Unknown;
+                                    }
+
                                     break;
                                 }
                         }

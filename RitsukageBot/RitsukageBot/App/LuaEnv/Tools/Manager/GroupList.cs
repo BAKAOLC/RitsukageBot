@@ -16,8 +16,6 @@ namespace Native.Csharp.App.LuaEnv.Tools.Manager
         public GroupInfo[] List { get => _List.ToArray(); }
         public int Count { get => _List.Count; }
 
-        public GroupList() => Task.Factory.StartNew(Update);
-
         public void Update()
         {
             lock (_lock)

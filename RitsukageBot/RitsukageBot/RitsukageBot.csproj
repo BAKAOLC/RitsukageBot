@@ -266,6 +266,10 @@
       <DependentUpon>CQExport.tt</DependentUpon>
     </Compile>
     <Compile Include="App\CQMain.cs" />
+    <Compile Include="App\LuaEnv\Bilibili\EndianBitConverter\BigEndianBitConverter.cs" />
+    <Compile Include="App\LuaEnv\Bilibili\EndianBitConverter\EndianBitConverter.cs" />
+    <Compile Include="App\LuaEnv\Bilibili\EndianBitConverter\LittleEndianBitConverter.cs" />
+    <Compile Include="App\LuaEnv\Bilibili\EndianBitConverter\SingleConverter.cs" />
     <Compile Include="App\LuaEnv\LuaState.cs" />
     <Compile Include="App\LuaEnv\Socket\HTTPListener.cs" />
     <Compile Include="App\LuaEnv\Socket\MCSocket.cs" />
@@ -330,6 +334,7 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>CQExport.log</LastGenOutput>
     </Content>
+    <Content Include="App\LuaEnv\Bilibili\EndianBitConverter\LICENSE.EndianBitConverter.txt" />
     <EmbeddedResource Include="costura32\git2-dd2d538.dll" />
     <EmbeddedResource Include="costura32\lua53.dll" />
     <None Include="FodyWeavers.xml" />
