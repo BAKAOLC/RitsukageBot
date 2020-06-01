@@ -71,6 +71,7 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
         /// 弹幕内容
         /// <para>此项有值的消息类型：<list type="bullet">
         /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.Comment"/></item>
+        /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.SuperChat"/></item>
         /// </list></para>
         /// </summary>
         public string CommentText { get; set; }
@@ -83,6 +84,7 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
         /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.Welcome"/></item>
         /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.WelcomeGuard"/></item>
         /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.GuardBuy"/></item>
+        /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.SuperChat"/></item>
         /// </list></para>
         /// </summary>
         public string UserName { get; set; }
@@ -95,6 +97,7 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
         /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.Welcome"/></item>
         /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.WelcomeGuard"/></item>
         /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.GuardBuy"/></item>
+        /// <item><see cref="BilibiliLiveDanmaku_SocketReceiveDataType.SuperChat"/></item>
         /// </list></para>
         /// </summary>
         public int UserID { get; set; }
