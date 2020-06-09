@@ -21,7 +21,7 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
 
         private static ConcurrentDictionary<int, BilibiliLiveDanmaku_Socket> SocketList = new ConcurrentDictionary<int, BilibiliLiveDanmaku_Socket>();
 
-        private static object ListLock = new object();
+        private static readonly object ListLock = new object();
 
         private static async void AsyncConnect(BilibiliLiveDanmaku_Socket socket)
         {
@@ -198,10 +198,27 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
                     Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", $"[Room {e.RoomID}] 直播结束");
                     break;
                 case BilibiliLiveDanmaku_SocketReceiveDataType.Comment:
-                    Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", $"[Room {e.RoomID}] {e.Danmaku.UserName}:{e.Danmaku.CommentText}");
+                    Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku",
+                        $"[Room {e.RoomID}] {e.Danmaku.UserName}:{e.Danmaku.CommentText}");
                     break;
                 case BilibiliLiveDanmaku_SocketReceiveDataType.GiftSend:
-                    Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku", $"[Room {e.RoomID}] {e.Danmaku.UserName} 赠送了 {e.Danmaku.GiftCount} 个 {e.Danmaku.GiftName}");
+                    Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku",
+                        $"[Room {e.RoomID}] {e.Danmaku.UserName} 赠送了 {e.Danmaku.GiftCount} 个 {e.Danmaku.GiftName}");
+                    break;
+                case BilibiliLiveDanmaku_SocketReceiveDataType.GuardBuy:
+                    string type = e.Danmaku.UserGuardLevel switch
+                    {
+                        1 => "总督",
+                        2 => "提督",
+                        3 => "舰长",
+                        _ => "非船员",
+                    };
+                    Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku",
+                        $"[Room {e.RoomID}] {e.Danmaku.UserName} 赠送了 {e.Danmaku.GiftCount} 个月 {type}");
+                    break;
+                case BilibiliLiveDanmaku_SocketReceiveDataType.SuperChat:
+                    Common.AppData.CQLog.InfoReceive("Bilibili Live Danmaku",
+                        $"[Room {e.RoomID}][SuperChat][${e.Danmaku.Price}] {e.Danmaku.UserName}:{e.Danmaku.CommentText}");
                     break;
             }
             

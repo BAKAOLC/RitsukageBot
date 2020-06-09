@@ -291,9 +291,15 @@ function WaitUntil(flag, ms)
     WaitingRecord[flag] = WaitingRecord[flag] or {}
     WaitingRecord[flag][coroutine.running()] = true
     if ms then
-        return TaskSleep(ms)
+        return (function(...)
+            WaitingRecord[flag] = nil
+            return ...
+        end)(TaskSleep(ms))
     else
-        return coroutine.yield()
+        return (function(...)
+            WaitingRecord[flag] = nil
+            return ...
+        end)(coroutine.yield())
     end
 end
 

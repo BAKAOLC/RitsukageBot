@@ -75,7 +75,18 @@ namespace Native.Csharp.App.LuaEnv.Tools.Manager
             }
         }
 
-        public GroupMemberInfo GetUserInfo(long id) => Member[id];
+        public GroupMemberInfo GetUserInfo(long id)
+        {
+            GroupMemberInfo result = null;
+            try
+            {
+                result = Member[id];
+            }
+            catch
+            {
+            }
+            return result;
+        }
         public GroupMemberInfo GetUserInfo(QQ qq) => GetUserInfo(qq.Id);
 
         public bool HasUser(long id) => GetUserInfo(id) != null;
