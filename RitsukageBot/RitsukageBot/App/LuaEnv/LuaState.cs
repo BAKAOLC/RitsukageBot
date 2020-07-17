@@ -289,10 +289,15 @@ end
 ---@return any
 function WaitUntil(flag, ms)
     WaitingRecord[flag] = WaitingRecord[flag] or {}
-    WaitingRecord[flag][coroutine.running()] = true
+    local thread = coroutine.running()
+    WaitingRecord[flag][thread] = true
     if ms then
         return (function(...)
             WaitingRecord[flag] = nil
+            if TimerThreadRecord[thread] then
+                TimerIdRecord[TimerThreadRecord[thread]] = nil
+                TimerThreadRecord[thread] = nil
+            end
             return ...
         end)(TaskSleep(ms))
     else

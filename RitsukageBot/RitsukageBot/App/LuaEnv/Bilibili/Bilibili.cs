@@ -15,7 +15,7 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
     class Bilibili
     {
         private const string LoginPage = "https://passport.bilibili.com/login";
-        private const string GetLoginUrl= "https://passport.bilibili.com/qrcode/getLoginUrl";
+        private const string GetLoginUrl = "https://passport.bilibili.com/qrcode/getLoginUrl";
         private const string GetLoginInfoUrl = "https://passport.bilibili.com/qrcode/getLoginInfo";
 
         public static string NewLoginRequest() => Utils.HttpGet(GetLoginUrl);
@@ -122,6 +122,68 @@ namespace Native.Csharp.App.LuaEnv.Bilibili
             response.Dispose();
             request.Abort();
             return retString;
+        }
+
+        public static string GET(string Url, string postDataStr = "", long timeout = 5000,
+            string cookie = "", string referer = "", string origin = "")
+        {
+            HttpWebRequest request = null;
+            try
+            {
+                if (Url.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+                {
+                    ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback((object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors) =>
+                    {
+                        return true;
+                    });
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+                }
+                request = (HttpWebRequest)WebRequest.Create(Url + (postDataStr == "" ? "" : "?") + postDataStr);
+                request.Timeout = (int)timeout;
+                SetHeaders(request, "pc", cookie);
+                if (!string.IsNullOrWhiteSpace(referer))
+                    request.Referer = referer;
+                if (!string.IsNullOrWhiteSpace(origin))
+                    request.Headers.Add("Origin", origin);
+                return GET(request);
+            }
+            catch (Exception e)
+            {
+                request?.Abort();
+                Common.AppData.CQLog.Error("lua插件错误", $"post错误：{e.Message}");
+            }
+            return "";
+        }
+
+        public static string POST(string Url, string postDataStr, long timeout = 5000,
+            string cookie = "", string referer = "", string origin = "")
+        {
+            HttpWebRequest request = null;
+            try
+            {
+                if (Url.StartsWith("https", StringComparison.OrdinalIgnoreCase))
+                {
+                    ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback((object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors) =>
+                    {
+                        return true;
+                    });
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+                }
+                request = (HttpWebRequest)WebRequest.Create(Url);
+                request.Timeout = (int)timeout;
+                SetHeaders(request, "pc", cookie);
+                if (!string.IsNullOrWhiteSpace(referer))
+                    request.Referer = referer;
+                if (!string.IsNullOrWhiteSpace(origin))
+                    request.Headers.Add("Origin", origin);
+                return POST(request, postDataStr);
+            }
+            catch (Exception e)
+            {
+                request?.Abort();
+                Common.AppData.CQLog.Error("lua插件错误", $"post错误：{e.Message}");
+            }
+            return "";
         }
     }
 }
